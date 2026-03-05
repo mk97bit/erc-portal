@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <title>ERC IT CLOUD PORTAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --bg: #0f172a; --panel: #1e293b; --card: #1e293b; 
+            --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155; 
+            --accent: #6366f1; --high: #ef4444; --med: #f59e0b; --low: #10b981; 
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 15px; line-height: 1.5; padding-bottom: 80px; }
+        
+        #loginOverlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .login-box { background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid var(--border); width: 100%; max-width: 350px; text-align: center; }
+
+        .header { max-width: 1200px; margin: 0 auto 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { margin: 0; font-size: 20px; letter-spacing: -1px; }
+        
+        input, textarea, select { 
+            width: 100%; background: var(--panel); border: 1px solid var(--border); 
+            border-radius: 12px; padding: 14px; color: var(--text); margin-bottom: 12px; 
+            font-size: 16px; outline: none; 
+        }
+        
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1200px; margin: 0 auto; }
+        
+        /* Mobile Specific UI */
+        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--border); padding: 12px; z-index: 1000; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .nav-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 12px; border-radius: 10px; font-weight: 800; font-size: 12px; transition: 0.2s; }
+        .nav-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        @media (max-width: 850px) { 
+            .container { grid-template-columns: 1fr; }
+            .mobile-nav { display: grid; }
+            .col-requests { display: none; } /* Hide requests by default on mobile */
+            body { padding-bottom: 100px; }
+        }
+
+        .form-section { background: var(--panel); border: 1px solid var(--border); padding: 20px; border-radius: 16px; margin-bottom: 25px; }
+        button { border: 1px solid var(--border); padding: 12px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; background: var(--panel); color: var(--text); font-size: 13px; }
+        .btn-primary { background: var(--accent); color: white; border: none; height: 50px; width: 100%; font-size: 15px; }
+
+        .group-header { font-size: 11px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin: 25px 0 12px; display: flex; align-items: center; gap: 10px; letter-spacing: 1px; }
+        .group-header::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+        .item { background: var(--panel); border: 1px solid var(--border); padding: 18px; border-radius: 16px; margin-bottom: 15px; border-left: 6px solid transparent; }
+        .pri-High { border-left-color: var(--high); } .pri-Medium { border-left-color: var(--med); } .pri-Low { border-left-color: var(--low); }
+        .badge-High { color: var(--high); border-color: var(--high); background: rgba(239, 68, 68, 0.1); }
+        .badge-Medium { color: var(--med); border-color: var(--med); background: rgba(245, 158, 11, 0.1); }
+        .badge-Low { color: var(--low); border-color: var(--low); background: rgba(16, 185, 129, 0.1); }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; border: 1px solid var(--border); }
+        .countdown { font-size: 11px; font-weight: 900; padding: 4px 8px; border-radius: 6px; }
+        .cd-overdue { background: rgba(239, 68, 68, 0.2); color: var(--high); }
+        .cd-today { background: rgba(245, 158, 11, 0.2); color: var(--med); }
+        .cd-upcoming { background: rgba(99, 102, 241, 0.2); color: var(--accent); }
+        .item-meta { font-size: 10px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 8px; }
+        .ticket-age { color: var(--accent); font-weight: 800; margin-left: 5px; }
+        .comments-area { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; margin: 15px 0; font-size: 13px; }
+        .c-date { font-size: 10px; color: var(--accent); font-weight: 800; display: block; }
+        .card-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 12px; }
+    </style>
+</head>
+<body>
+
+<div id="loginOverlay">
+    <div class="login-box">
+        <h1>ERC IT CLOUD</h1>
+        <input type="password" id="passInput" placeholder="Access Key" style="text-align:center;">
+        <button class="btn-primary" onclick="attemptLogin()">Unlock System</button>
+    </div>
+</div>
+
+<div id="mainContent" style="display:none;">
+    <div class="header">
+        <h1>ERC CLOUD <span id="status" style="font-size:10px; opacity:0.5;">● Online</span></h1>
+        <div style="display:flex; gap:8px;">
+            <button onclick="sync()">🔄</button>
+            <button onclick="location.reload()" style="color:var(--high); border-color:var(--high);">🔒</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="col-tickets" class="col-tickets">
+            <h2 style="color:var(--accent); font-size:18px;">Tickets</h2>
+            <div class="form-section">
+                <input id="t_title" placeholder="Issue Title">
+                <textarea id="t_desc" placeholder="Details..." rows="2"></textarea>
+                <div style="display:flex; gap:10px">
+                    <select id="t_pri" style="flex:1"><option>Low</option><option selected>Medium</option><option>High</option></select>
+                    <button class="btn-primary" style="flex:2" onclick="addTicket()">Create</button>
+                </div>
+            </div>
+            <div id="ticketList"></div>
+        </div>
+
+        <div id="col-requests" class="col-requests">
+            <h2 style="color:var(--accent); font-size:18px;">Schedule</h2>
+            <div class="form-section">
+                <input id="s_title" placeholder="Task Name">
+                <textarea id="s_desc" placeholder="Details..." rows="2"></textarea>
+                <div style="display:flex; gap:10px;"><input type="date" id="s_date"><input type="time" id="s_time"></div>
+                <button class="btn-primary" style="margin-top:5px" onclick="addRequest()">Add Task</button>
+            </div>
+            <div id="scheduleList"></div>
+        </div>
+    </div>
+
+    <div class="mobile-nav">
+        <button id="btn-t" class="nav-btn active" onclick="switchTab('t')">🎫 TICKETS</button>
+        <button id="btn-r" class="nav-btn" onclick="switchTab('r')">📅 SCHEDULE</button>
+    </div>
+</div>
+
+<input type="color" id="colorPicker" style="display:none">
+
+<script>
+    const API = "https://script.google.com/macros/s/AKfycbyY5ZDOpdvFkyhUwE6iqAQHNidEOA-5TMq-P-IEiwRW7fRDPzBxS1DZ4g61ugRRUVchsQ/exec";
+    let db = { tickets: [], requests: [] };
+
+    function switchTab(tab) {
+        const isMobile = window.innerWidth <= 850;
+        if (!isMobile) return;
+
+        document.getElementById('col-tickets').style.display = tab === 't' ? 'block' : 'none';
+        document.getElementById('col-requests').style.display = tab === 'r' ? 'block' : 'none';
+        document.getElementById('btn-t').className = 'nav-btn ' + (tab === 't' ? 'active' : '');
+        document.getElementById('btn-r').className = 'nav-btn ' + (tab === 'r' ? 'active' : '');
+        window.scrollTo(0, 0);
+    }
+
+    function attemptLogin() {
+        const secureKey = "RVJDMjAyNg=="; 
+        const input = document.getElementById('passInput').value;
+        if(btoa(input) === secureKey) {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            sync();
+        } else { alert("Unauthorized"); }
+    }
+
+    async function sync() {
+        document.getElementById('status').innerText = "● Syncing...";
+        try {
+            const r = await fetch(API + '?t=' + Date.now());
+            db = await r.json();
+            draw();
+            document.getElementById('status').innerText = "● Online";
+        } catch(e) { document.getElementById('status').innerText = "● Error"; }
+    }
+
+    async function save() {
+        document.getElementById('status').innerText = "● Saving...";
+        await fetch(API, { method: "POST", mode: "no-cors", body: JSON.stringify(db) });
+        setTimeout(() => { document.getElementById('status').innerText = "● Online"; }, 1500);
+    }
+
+    function addTicket() {
+        const t = document.getElementById('t_title').value; if(!t) return;
+        db.tickets.unshift({ id: Date.now(), title: t, description: document.getElementById('t_desc').value, priority: document.getElementById('t_pri').value, comments: [], color: null, created: new Date().toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) });
+        document.getElementById('t_title').value = ''; document.getElementById('t_desc').value = '';
+        draw(); save();
+    }
+
+    function addRequest() {
+        const t = document.getElementById('s_title').value, d = document.getElementById('s_date').value; if(!t || !d) return;
+        db.requests.push({ id: Date.now(), title: t, description: document.getElementById('s_desc').value, date: d, time: document.getElementById('s_time').value || "09:00", color: null });
+        document.getElementById('s_title').value = ''; document.getElementById('s_desc').value = '';
+        draw(); save();
+    }
+
+    function doComment(id) {
+        const m = prompt("Comment:"); if(!m) return;
+        const item = db.tickets.find(x => x.id == id);
+        if(item) { item.comments.push({ text: m, date: new Date().toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) }); draw(); save(); }
+    }
+
+    function doDelete(type, id) {
+        if(!confirm("Delete?")) return;
+        if(type === 't') db.tickets = db.tickets.filter(x => x.id != id);
+        else db.requests = db.requests.filter(x => x.id != id);
+        draw(); save();
+    }
+
+    function doColor(type, id) {
+        const cp = document.getElementById('colorPicker');
+        cp.oninput = (e) => {
+            const list = type === 't' ? db.tickets : db.requests;
+            const item = list.find(x => x.id == id);
+            if(item) item.color = e.target.value;
+            draw(); save();
+        };
+        cp.click();
+    }
+
+    function getAge(id) {
+        const diff = Math.floor((new Date() - new Date(id)) / (1000 * 60 * 60 * 24));
+        return diff === 0 ? "Opened Today" : diff + (diff === 1 ? " day sitting" : " days sitting");
+    }
+
+    function getDays(d) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const taskDate = new Date(d); taskDate.setHours(0,0,0,0);
+        const diff = Math.ceil((taskDate - today) / (1000 * 60 * 60 * 24));
+        if (diff === 0) return { label: "DUE TODAY", type: "today", class: "cd-today" };
+        if (diff < 0) return { label: "OVERDUE", type: "overdue", class: "cd-overdue" };
+        return { label: diff + " days left", type: "upcoming", class: "cd-upcoming" };
+    }
+
+    function drawItem(item, type) {
+        const countdown = type === 'r' ? getDays(item.date) : null;
+        const createdOn = item.created || new Date(item.id).toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+        return `
+        <div class="item ${type === 't' ? 'pri-' + item.priority : ''}" style="border-left-color:${item.color || ''}">
+            <div class="item-meta">
+                ${type === 't' ? `Created: ${createdOn} <span class="ticket-age">${getAge(item.id)}</span>` : `Scheduled: ${item.date} @ ${item.time}`}
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:start; gap:10px;">
+                <b style="flex:1;">${item.title}</b> 
+                <span class="${type === 't' ? 'badge badge-' + item.priority : 'countdown ' + countdown.class}">${type === 't' ? item.priority : countdown.label}</span>
+            </div>
+            <p style="font-size:14px; opacity:0.8; margin:12px 0;">${item.description || ''}</p>
+            ${item.comments && item.comments.length ? `<div class="comments-area">${item.comments.map(c => `<div><span class="c-date">${c.date}</span>${c.text}</div>`).join('')}</div>` : ''}
+            <div class="card-actions">
+                <div style="display:flex; gap:8px;">
+                    ${type === 't' ? `<button onclick="doComment(${item.id})">💬</button>` : ''}
+                    <button onclick="doColor('${type}', ${item.id})">🎨</button>
+                </div>
+                <button onclick="doDelete('${type}', ${item.id})" style="border:none; color:var(--high); background:none; font-weight:800;">Delete</button>
+            </div>
+        </div>`;
+    }
+
+    function draw() {
+        document.getElementById('ticketList').innerHTML = db.tickets.map(t => drawItem(t, 't')).join('');
+        const sorted = [...db.requests].sort((a, b) => (a.date + " " + (a.time || "00:00")).localeCompare(b.date + " " + (b.time || "00:00")));
+        const overdue = sorted.filter(r => getDays(r.date).type === 'overdue');
+        const today = sorted.filter(r => getDays(r.date).type === 'today');
+        const upcoming = sorted.filter(r => getDays(r.date).type === 'upcoming');
+
+        let html = "";
+        if(today.length) html += `<div class="group-header" style="color:var(--med)">🕒 Due Today</div>` + today.map(r => drawItem(r, 'r')).join('');
+        if(upcoming.length) html += `<div class="group-header">📅 Upcoming</div>` + upcoming.map(r => drawItem(r, 'r')).join('');
+        if(overdue.length) html += `<div class="group-header" style="color:var(--high)">⚠️ Overdue</div>` + overdue.map(r => drawItem(r, 'r')).join('');
+        document.getElementById('scheduleList').innerHTML = html || "<p style='font-size:12px; opacity:0.5; margin-top:20px'>No tasks found.</p>";
+    }
+</script>
+</body>
+</html>
