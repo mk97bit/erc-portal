@@ -9,7 +9,8 @@
         :root { 
             --bg: #0f172a; --panel: #1e293b; --card: #1e293b; 
             --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155; 
-            --accent: #6366f1; --high: #ef4444; --med: #f59e0b; --low: #10b981; 
+            --accent: #6366f1; --high: #ff4d4d; --med: #ffae00; --low: #10b981; 
+            --success-green: #059669;
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 15px; line-height: 1.5; }
@@ -17,9 +18,12 @@
         #loginOverlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
         .login-box { background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid var(--border); width: 100%; max-width: 350px; text-align: center; }
 
-        input, textarea, select { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: var(--text); margin-bottom: 10px; font-size: 15px; outline: none; }
-        button { border: 1px solid var(--border); padding: 10px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; background: var(--panel); color: var(--text); font-size: 12px; transition: 0.2s; }
+        input, textarea, select { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: var(--text); margin-bottom: 10px; font-size: 15px; outline: none; font-family: 'Inter', sans-serif; }
+        textarea { resize: none; }
+
+        button { border: 1px solid var(--border); padding: 10px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; background: var(--panel); color: var(--text); font-size: 12px; transition: 0.2s; font-family: 'Inter', sans-serif; }
         .btn-primary { background: var(--accent); color: white; border: none; height: 48px; width: 100%; font-size: 15px; display: flex; align-items: center; justify-content: center; }
+        .btn-success { background: var(--success-green) !important; color: white !important; border: none !important; }
 
         #userView, #adminView { display: none; max-width: 1200px; margin: 0 auto; }
         #userView { max-width: 500px; text-align: center; padding-top: 20px; }
@@ -31,23 +35,22 @@
         .container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--border); padding: 12px; z-index: 1000; grid-template-columns: 1fr 1fr; gap: 10px; }
         
-        @media (max-width: 850px) { 
-            .container { grid-template-columns: 1fr; }
-            .mobile-nav { display: grid; }
-            #col-requests { display: none; }
-            body { padding-bottom: 80px; }
-        }
+        @media (max-width: 850px) { .container { grid-template-columns: 1fr; } .mobile-nav { display: grid; } #col-requests { display: none; } body { padding-bottom: 80px; } }
+
+        #statusDisplay { font-size: 10px; font-weight: 900; letter-spacing: 0.5px; }
+        .status-dot { font-size: 12px; margin-right: -1px; }
+        .online { color: #10b981; text-shadow: 0 0 5px rgba(16,185,129,0.3); }
+        .syncing { color: #f59e0b; text-shadow: 0 0 5px rgba(245,158,11,0.3); }
+        .offline { color: #ef4444; text-shadow: 0 0 5px rgba(239,68,68,0.3); }
 
         .form-section { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 16px; margin-bottom: 25px; }
-        .item { background: var(--panel); border: 1px solid var(--border); padding: 18px; border-radius: 16px; margin-bottom: 15px; border-left: 6px solid transparent; text-align: left; }
+        .item { background: var(--panel); border: 1px solid var(--border); padding: 18px; border-radius: 16px; margin-bottom: 15px; border-left: 6px solid #334155; text-align: left; }
+        .item.completed { opacity: 0.5; filter: grayscale(0.4); border-left-color: #475569 !important; }
+
         .meta-line { font-size: 11px; font-weight: 700; color: var(--accent); display: block; margin-bottom: 4px; }
         .time-line { font-size: 10px; color: var(--text-muted); display: block; margin-bottom: 8px; }
-        
-        /* RESTORED COMMENT STYLE */
-        .comments-area { background: rgba(15, 23, 42, 0.6); border-radius: 10px; padding: 12px; margin-top: 15px; border: 1px solid var(--border); }
-        .comment-item { margin-bottom: 8px; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
-        .comment-item:last-child { border: none; margin: 0; padding: 0; }
-        .c-date { font-size: 9px; font-weight: 800; color: var(--accent); display: block; text-transform: uppercase; }
+        .comments-area { background: rgba(15, 23, 42, 0.6); border-radius: 10px; padding: 10px; margin-top: 10px; border: 1px solid var(--border); }
+        .comment-item { font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 4px 0; }
 
         .group-header { font-size: 11px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin: 25px 0 12px; display: flex; align-items: center; gap: 10px; }
         .group-header::after { content: ""; flex: 1; height: 1px; background: var(--border); }
@@ -65,7 +68,7 @@
 </div>
 
 <div id="userView">
-    <h2 style="color:var(--accent)">New Request</h2>
+    <h2 style="color:var(--accent)">Portal Submission</h2>
     <div class="user-toggle">
         <div id="u-tab-t" class="u-btn active" onclick="setMode('t')">🎫<br>IT Ticket</div>
         <div id="u-tab-r" class="u-btn" onclick="setMode('r')">📅<br>Schedule Task</div>
@@ -74,43 +77,47 @@
         <div style="display:flex; gap:10px;"><input id="u_name" placeholder="Your Name"><input id="u_loc" placeholder="Location"></div>
         <input id="u_title" placeholder="Title">
         <textarea id="u_desc" placeholder="Details..." rows="3"></textarea>
-        <div id="u_extra" style="display:none; gap:10px; margin-bottom:10px;"><input type="date" id="u_date"><input type="time" id="u_time"></div>
-        <button class="btn-primary" id="submitBtn" onclick="submitUserForm()">Submit Request</button>
+        <div id="u_extra" style="display:none; flex-direction:column; gap:10px; margin-bottom:10px;">
+            <label style="font-size:10px; color:var(--accent); text-align:left; font-weight:800;">CHOOSE DATE & TIME:</label>
+            <div style="display:flex; gap:10px;"><input type="date" id="u_date"><input type="time" id="u_time"></div>
+        </div>
+        <button class="btn-primary" id="submitBtn" onclick="submitUserForm()">Submit Ticket</button>
     </div>
     <button onclick="location.reload()" style="opacity:0.5; border:none; margin-top:20px;">LOGOUT</button>
 </div>
 
 <div id="adminView">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2>ADMIN CONSOLE <span id="status" style="font-size:10px; opacity:0.5;">● Online</span></h2>
+        <h2>ADMIN CONSOLE <span id="statusDisplay" class="online"><span class="status-dot">●</span>Online</span></h2>
         <div style="display:flex; gap:10px;"><button onclick="sync()">🔄</button><button onclick="location.reload()" style="color:var(--high)">🔒</button></div>
     </div>
-
     <div class="container">
         <div id="col-tickets">
-            <h3 style="color:var(--accent)">Tickets</h3>
+            <h3 style="color:var(--accent)">Active Tickets</h3>
             <div class="form-section">
                 <div style="display:flex; gap:10px;"><input id="at_name" placeholder="Requester"><input id="at_loc" placeholder="Location"></div>
                 <input id="at_title" placeholder="Title">
                 <textarea id="at_desc" placeholder="Notes..." rows="2"></textarea>
                 <div style="display:flex; gap:10px;"><select id="at_pri" style="flex:1"><option>Low</option><option selected>Medium</option><option>High</option></select>
-                <button class="btn-primary" style="flex:1" onclick="addAdminItem('t')">Add Ticket</button></div>
+                <button class="btn-primary" style="flex:1" onclick="addItem('t')">Add Ticket</button></div>
             </div>
             <div id="ticketList"></div>
+            <div class="group-header">✅ Completed Tickets</div>
+            <div id="compTicketList"></div>
         </div>
-
         <div id="col-requests">
-            <h3 style="color:var(--accent)">Schedule</h3>
+            <h3 style="color:var(--accent)">Active Tasks</h3>
             <div class="form-section">
                 <div style="display:flex; gap:10px;"><input id="as_name" placeholder="Name"><input id="as_loc" placeholder="Location"></div>
                 <input id="as_title" placeholder="Title">
                 <div style="display:flex; gap:10px;"><input type="date" id="as_date"><input type="time" id="as_time"></div>
-                <button class="btn-primary" style="margin-top:10px;" onclick="addAdminItem('r')">Add Task</button>
+                <button class="btn-primary" style="margin-top:10px;" onclick="addItem('r')">Add Task</button>
             </div>
             <div id="scheduleList"></div>
+            <div class="group-header">✅ Completed Tasks</div>
+            <div id="compScheduleList"></div>
         </div>
     </div>
-
     <div class="mobile-nav">
         <button id="btn-t" onclick="switchTab('t')" style="background:var(--accent); color:white;">TICKETS</button>
         <button id="btn-r" onclick="switchTab('r')">SCHEDULE</button>
@@ -121,139 +128,107 @@
 
 <script>
     const API = "https://script.google.com/macros/s/AKfycbyY5ZDOpdvFkyhUwE6iqAQHNidEOA-5TMq-P-IEiwRW7fRDPzBxS1DZ4g61ugRRUVchsQ/exec";
-    let db = { tickets: [], requests: [] };
+    let db = { tickets: [], requests: [], comp_t: [], comp_r: [] };
     let currentMode = 't';
 
+    function setStatus(type) {
+        const s = document.getElementById('statusDisplay');
+        if(type === 'online') { s.innerHTML = '<span class="status-dot">●</span>Online'; s.className = 'online'; }
+        else if(type === 'syncing') { s.innerHTML = '<span class="status-dot">●</span>Syncing'; s.className = 'syncing'; }
+        else { s.innerHTML = '<span class="status-dot">●</span>Offline'; s.className = 'offline'; }
+    }
+
     function attemptLogin() {
-        const input = document.getElementById('passInput').value;
-        if(btoa(input) === "RVJDMjAyNg==") { document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('adminView').style.display = 'block'; sync(); }
-        else if (btoa(input) === "VVNFUjIwMjY=") { document.getElementById('loginOverlay').style.display = 'none'; document.getElementById('userView').style.display = 'block'; }
-        else { alert("Invalid Key"); }
+        const val = document.getElementById('passInput').value;
+        if(btoa(val) === "RVJDMjAyNg==") { document.getElementById('loginOverlay').style.display='none'; document.getElementById('adminView').style.display='block'; sync(); }
+        else if(btoa(val) === "VVNFUjIwMjY=") { document.getElementById('loginOverlay').style.display='none'; document.getElementById('userView').style.display='block'; }
+        else alert("Invalid Key");
     }
 
     function setMode(m) { 
         currentMode = m; 
-        document.getElementById('u-tab-t').className = 'u-btn ' + (m === 't' ? 'active' : '');
-        document.getElementById('u-tab-r').className = 'u-btn ' + (m === 'r' ? 'active' : '');
-        document.getElementById('u_extra').style.display = m === 'r' ? 'flex' : 'none';
+        document.getElementById('u-tab-t').className = 'u-btn ' + (m==='t'?'active':'');
+        document.getElementById('u-tab-r').className = 'u-btn ' + (m==='r'?'active':'');
+        document.getElementById('u_extra').style.display = m==='r'?'flex':'none';
+        document.getElementById('submitBtn').innerText = m==='t'?'Submit Ticket':'Submit Request';
     }
 
     async function sync() {
-        document.getElementById('status').innerText = "● Syncing...";
-        const r = await fetch(API + '?t=' + Date.now());
-        db = await r.json(); draw();
-        document.getElementById('status').innerText = "● Online";
+        setStatus('syncing');
+        try {
+            const r = await fetch(API + '?t=' + Date.now());
+            const data = await r.json();
+            db = { tickets: data.tickets||[], requests: data.requests||[], comp_t: data.comp_t||[], comp_r: data.comp_r||[] };
+            draw(); setStatus('online');
+        } catch(e) { setStatus('offline'); }
     }
 
     async function save() {
-        document.getElementById('status').innerText = "● Saving...";
-        await fetch(API, { method: "POST", mode: "no-cors", body: JSON.stringify(db) });
-        setTimeout(sync, 1500);
+        setStatus('syncing');
+        try {
+            await fetch(API, { method:"POST", mode:"no-cors", body: JSON.stringify(db) });
+            setTimeout(sync, 1500);
+        } catch(e) { setStatus('offline'); }
     }
 
     async function submitUserForm() {
         const n = document.getElementById('u_name').value, t = document.getElementById('u_title').value;
-        if(!n || !t) return alert("Fill in Name and Title");
-        document.getElementById('submitBtn').innerText = "Sending...";
-        const r = await fetch(API + '?t=' + Date.now()); db = await r.json();
-        const entry = { id: Date.now(), requester: n, location: document.getElementById('u_loc').value || "Office", title: t, description: document.getElementById('u_desc').value, priority: "Medium", comments: [], created: new Date().toLocaleString('en-GB') };
-        if(currentMode === 't') db.tickets.unshift(entry);
-        else { entry.date = document.getElementById('u_date').value; entry.time = document.getElementById('u_time').value || "09:00"; db.requests.push(entry); }
-        await fetch(API, { method: "POST", mode: "no-cors", body: JSON.stringify(db) });
-        alert("Success!"); location.reload();
+        const btn = document.getElementById('submitBtn');
+        if(!n || !t) return alert("Missing Info");
+        btn.innerText = "Sending..."; btn.disabled = true;
+        try {
+            const entry = { id: Date.now(), requester: n, location: document.getElementById('u_loc').value||"Office", title: t, description: document.getElementById('u_desc').value, priority: "Medium", comments: [], created: new Date().toLocaleString('en-GB') };
+            if(currentMode==='r') { entry.date = document.getElementById('u_date').value; entry.time = document.getElementById('u_time').value||"09:00"; }
+            const r = await fetch(API + '?t=' + Date.now()); const d = await r.json();
+            db = { tickets: d.tickets||[], requests: d.requests||[], comp_t: d.comp_t||[], comp_r: d.comp_r||[] };
+            if(currentMode==='t') db.tickets.unshift(entry); else db.requests.push(entry);
+            await fetch(API, { method:"POST", mode:"no-cors", body: JSON.stringify(db) });
+            btn.innerText = "Success!"; btn.classList.add('btn-success');
+            setTimeout(() => location.reload(), 1500);
+        } catch(e) { btn.innerText = "Error"; btn.disabled = false; }
     }
 
-    function addAdminItem(type) {
+    function addItem(type) {
         const prefix = type === 't' ? 'at_' : 'as_';
-        const n = document.getElementById(prefix+'name').value, t = document.getElementById(prefix+'title').value;
-        if(!t) return alert("Enter a Title");
-        const entry = { id: Date.now(), requester: n || "ADMIN", location: document.getElementById(prefix+'loc').value || "HQ", title: t, description: document.getElementById(type==='t'?'at_desc':'').value || "", priority: document.getElementById('at_pri')?.value || "Medium", comments: [], created: new Date().toLocaleString('en-GB') };
-        if(type === 't') { db.tickets.unshift(entry); document.getElementById('at_title').value = ''; }
-        else { entry.date = document.getElementById('as_date').value; entry.time = document.getElementById('as_time').value || "09:00"; db.requests.push(entry); document.getElementById('as_title').value = ''; }
-        draw(); save();
+        const t = document.getElementById(prefix+'title').value; if(!t) return;
+        const entry = { id: Date.now(), requester: document.getElementById(prefix+'name').value||"ADMIN", location: document.getElementById(prefix+'loc').value||"HQ", title: t, description: document.getElementById(type==='t'?'at_desc':'')?.value||"", priority: document.getElementById('at_pri')?.value||"Medium", comments: [], created: new Date().toLocaleString('en-GB') };
+        if(type==='r') { entry.date = document.getElementById('as_date').value; entry.time = document.getElementById('as_time').value||"09:00"; }
+        if(type==='t') db.tickets.unshift(entry); else db.requests.push(entry);
+        document.getElementById(prefix+'title').value = ''; draw(); save();
     }
 
-    function doComment(type, id) {
-        const m = prompt("Comment:"); if(!m) return;
-        const list = type === 't' ? db.tickets : db.requests;
-        const item = list.find(x => x.id == id);
-        if(item) { if(!item.comments) item.comments = []; item.comments.push({ text: m, date: new Date().toLocaleString('en-GB', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}) }); draw(); save(); }
+    function move(from, to, id) {
+        const item = db[from].find(x => x.id == id);
+        if(item) { db[from] = db[from].filter(x => x.id != id); db[to].unshift(item); draw(); save(); }
     }
 
-    function doColor(type, id) {
-        const cp = document.getElementById('colorPicker');
-        cp.oninput = (e) => { const list = type === 't' ? db.tickets : db.requests; const item = list.find(x => x.id == id); if(item) { item.color = e.target.value; draw(); save(); } };
-        cp.click();
-    }
-
-    function doDelete(type, id) { if(confirm("Delete?")) { if(type==='t') db.tickets = db.tickets.filter(x=>x.id!=id); else db.requests = db.requests.filter(x=>x.id!=id); draw(); save(); } }
-
-    function getTimeStatus(d, t) {
-        const now = new Date();
-        const target = new Date(d + " " + (t || "00:00"));
-        
-        // Use YYYY-MM-DD string comparison to isolate "Today"
-        const todayStr = now.toISOString().split('T')[0];
-        const targetStr = d;
-
-        const diff = target - now;
-        const daysLeft = Math.floor(diff / 86400000);
-        const hoursLeft = Math.floor((diff % 86400000) / 3600000);
-        
-        let label = `${daysLeft}d ${hoursLeft}h left`;
-        let status = "upcoming";
-
-        if (targetStr < todayStr) {
-            label = "OVERDUE";
-            status = "overdue";
-        } else if (targetStr === todayStr) {
-            label = "DUE TODAY";
-            status = "today";
-        }
-
-        return { label, status };
-    }
+    function doDel(type, id) { if(confirm("Delete?")) { db[type] = db[type].filter(x=>x.id!=id); draw(); save(); } }
 
     function drawItem(item, type) {
-        const cd = type === 'r' ? getTimeStatus(item.date, item.time) : null;
+        const isComp = type.startsWith('comp');
+        const isTask = type === 'requests' || type === 'comp_r';
         return `
-        <div class="item" style="border-left-color:${item.color || (type === 't' ? 'var(--' + (item.priority === 'High' ? 'high' : item.priority === 'Medium' ? 'med' : 'low') + ')' : 'var(--accent)')}">
+        <div class="item ${isComp?'completed':''}" style="border-left-color:${item.color||'#334155'}">
             <span class="meta-line">👤 ${item.requester} | 📍 ${item.location}</span>
-            <span class="time-line">${type === 't' ? 'Created: ' + item.created : 'Scheduled: ' + item.date + ' @ ' + item.time}</span>
-            <b style="font-size:14px; display:block; margin-bottom:5px;">${item.title}</b>
-            <p style="font-size:13px; opacity:0.8; margin:0;">${item.description || ''}</p>
-            
-            ${item.comments && item.comments.length ? `
-                <div class="comments-area">
-                    ${item.comments.map(c => `
-                        <div class="comment-item">
-                            <span class="c-date">${c.date}</span>
-                            ${c.text}
-                        </div>
-                    `).join('')}
-                </div>` : ''}
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; border-top:1px solid var(--border); padding-top:8px;">
-                <div style="display:flex; gap:8px;"><button onclick="doComment('${type}', ${item.id})">💬</button><button onclick="doColor('${type}', ${item.id})">🎨</button>
-                ${type === 'r' ? `<span class="countdown-badge">${cd.label}</span>` : ''}</div>
-                <button onclick="doDelete('${type}', ${item.id})" style="border:none; color:var(--high); background:none; font-weight:800;">Del</button>
+            <span class="time-line">${isTask ? item.date + ' @ ' + item.time : 'Created: '+item.created}</span>
+            <b style="font-size:14px; display:block;">${item.title}</b>
+            <p style="font-size:12px; opacity:0.8;">${item.description||''}</p>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                ${isComp ? `<button onclick="move('${type}', '${type==='comp_t'?'tickets':'requests'}', ${item.id})">🔄</button>` : 
+                           `<button onclick="move('${type}', '${type==='tickets'?'comp_t':'comp_r'}', ${item.id})">✅</button>`}
+                <button onclick="const m=prompt('Comment:'); if(m){item.comments.push({text:m, date:new Date().toLocaleTimeString()}); draw(); save();}">💬</button>
+                <button onclick="const cp=document.getElementById('colorPicker'); cp.oninput=(e)=>{item.color=e.target.value; draw(); save();}; cp.click();">🎨</button>
+                <button onclick="doDel('${type}', ${item.id})" style="color:var(--high); margin-left:auto; border:none; background:none;">Del</button>
             </div>
+            ${item.comments.length ? `<div class="comments-area">${item.comments.map(c=>`<div class="comment-item"><b>${c.date}</b>: ${c.text}</div>`).join('')}</div>` : ''}
         </div>`;
     }
 
     function draw() {
-        document.getElementById('ticketList').innerHTML = db.tickets.map(t => drawItem(t, 't')).join('');
-        const reqs = db.requests.map(r => ({...r, info: getTimeStatus(r.date, r.time)}));
-        
-        const today = reqs.filter(r => r.info.status === 'today').sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
-        const upcoming = reqs.filter(r => r.info.status === 'upcoming').sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
-        const overdue = reqs.filter(r => r.info.status === 'overdue').sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
-
-        let h = "";
-        if(today.length) h += `<div class="group-header" style="color:var(--med)">🕒 Today</div>` + today.map(r => drawItem(r, 'r')).join('');
-        if(upcoming.length) h += `<div class="group-header">📅 Upcoming</div>` + upcoming.map(r => drawItem(r, 'r')).join('');
-        if(overdue.length) h += `<div class="group-header" style="color:var(--high)">⚠️ Overdue</div>` + overdue.map(r => drawItem(r, 'r')).join('');
-        document.getElementById('scheduleList').innerHTML = h || "<p style='font-size:11px; opacity:0.5;'>Empty.</p>";
+        document.getElementById('ticketList').innerHTML = db.tickets.map(t=>drawItem(t, 'tickets')).join('');
+        document.getElementById('compTicketList').innerHTML = db.comp_t.map(t=>drawItem(t, 'comp_t')).join('');
+        document.getElementById('scheduleList').innerHTML = db.requests.map(r=>drawItem(r, 'requests')).join('');
+        document.getElementById('compScheduleList').innerHTML = db.comp_r.map(r=>drawItem(r, 'comp_r')).join('');
     }
 
     function switchTab(t) {
@@ -261,8 +236,6 @@
         document.getElementById('col-requests').style.display = t === 'r' ? 'block' : 'none';
         document.getElementById('btn-t').style.background = t === 't' ? 'var(--accent)' : 'transparent';
         document.getElementById('btn-r').style.background = t === 'r' ? 'var(--accent)' : 'transparent';
-        document.getElementById('btn-t').style.color = t === 't' ? 'white' : 'var(--text-muted)';
-        document.getElementById('btn-r').style.color = t === 'r' ? 'white' : 'var(--text-muted)';
     }
 </script>
 </body>
