@@ -14,7 +14,8 @@
         .login-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel); padding: 40px; border-radius: 24px; border: 1px solid var(--border); width: 90%; max-width: 400px; text-align: center; }
         .login-footer { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; }
 
-        input, textarea, select { width: 100%; background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white !important; margin-bottom: 10px; font-size: 13px; outline: none; resize: none; }
+        /* FIXED: Removed !important from color to fix empty/white dropdowns on mobile */
+        input, textarea, select { width: 100%; background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white; margin-bottom: 10px; font-size: 13px; outline: none; resize: none; }
         
         .sel-High { border-color: var(--high); color: var(--high) !important; }
         .sel-Medium { border-color: var(--med); color: var(--med) !important; }
@@ -142,7 +143,7 @@
 </div>
 
 <script>
-    // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
+    // PASTE YOUR GOOGLE WEB APP URL HERE
     const API_URL = "https://script.google.com/macros/s/AKfycbx9ZwBjXqNY8Pi4xexlvdrhSaPNaKjlmdEGzlzHlUZhHWuc5O-YrzASFob4hTB5atWT/exec";
     
     let db = { tickets:[], requests:[], comp_t:[], comp_r:[] }, isAdmin = false;
@@ -177,11 +178,10 @@
     async function save() { 
         await fetch(API_URL, { 
             method: 'POST', 
-            mode: 'no-cors', // Google Apps Script requires no-cors for simple posts
+            mode: 'no-cors',
             headers: { "Content-Type": "application/json" }, 
             body: JSON.stringify(db) 
         }); 
-        // Small delay because no-cors doesn't wait for completion
         setTimeout(sync, 800);
     }
 
