@@ -3,240 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>ERC IT CLOUD</title>
+    <title>ERC Cloud Ticketing</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --bg: #0f172a; --panel: #1e293b; --card: #1e293b; 
-            --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155; 
-            --accent: #6366f1; --high: #ff4d4d; --med: #ffae00; --low: #10b981; 
-            --success-green: #059669;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 15px; line-height: 1.5; }
+        :root { --bg: #0f172a; --panel: #1e293b; --text: #f1f5f9; --accent: #6366f1; --high: #ff4d4d; --med: #fbbf24; --low: #10b981; --border: #334155; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); padding: 15px; font-size: 14px; min-height: 100vh; display: flex; flex-direction: column; }
         
-        #loginOverlay { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
-        .login-box { background: var(--panel); padding: 30px; border-radius: 20px; border: 1px solid var(--border); width: 100%; max-width: 350px; text-align: center; }
+        /* LOGIN CENTERED FIX */
+        #loginOverlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 4000; height: 100vh; width: 100vw; }
+        .login-box { background: var(--panel); padding: 40px; border-radius: 24px; border: 1px solid var(--border); width: 100%; max-width: 400px; text-align: center; }
 
-        input, textarea, select { width: 100%; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: var(--text); margin-bottom: 10px; font-size: 15px; outline: none; font-family: 'Inter', sans-serif; }
-        textarea { resize: none; }
-
-        button { border: 1px solid var(--border); padding: 10px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; background: var(--panel); color: var(--text); font-size: 12px; transition: 0.2s; font-family: 'Inter', sans-serif; }
-        .btn-primary { background: var(--accent); color: white; border: none; height: 48px; width: 100%; font-size: 15px; display: flex; align-items: center; justify-content: center; }
-        .btn-success { background: var(--success-green) !important; color: white !important; border: none !important; }
-
-        #userView, #adminView { display: none; max-width: 1200px; margin: 0 auto; }
-        #userView { max-width: 500px; text-align: center; padding-top: 20px; }
-
-        .user-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .u-btn { padding: 15px; border-radius: 12px; background: var(--panel); border: 2px solid var(--border); color: var(--text-muted); font-weight: 800; cursor: pointer; font-size: 12px; }
-        .u-btn.active { border-color: var(--accent); color: white; background: rgba(99, 102, 241, 0.1); }
-
-        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--border); padding: 12px; z-index: 1000; grid-template-columns: 1fr 1fr; gap: 10px; }
+        input, textarea, select { width: 100%; background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white !important; margin-bottom: 10px; font-size: 13px; outline: none; resize: none; }
         
-        @media (max-width: 850px) { .container { grid-template-columns: 1fr; } .mobile-nav { display: grid; } #col-requests { display: none; } body { padding-bottom: 80px; } }
+        button { border: 1px solid var(--border); padding: 10px 16px; border-radius: 10px; cursor: pointer; background: var(--panel); color: white; font-weight: 700; font-size: 11px; transition: 0.2s; }
+        .btn-primary { background: var(--accent); border: none; width: 100%; height: 48px; font-size: 15px; margin-top: 5px; letter-spacing: 1px; }
+        .btn-logoff { background: rgba(255, 77, 77, 0.1); color: var(--high); border-color: var(--high); }
 
-        #statusDisplay { font-size: 10px; font-weight: 900; letter-spacing: 0.5px; }
-        .status-dot { font-size: 12px; margin-right: -1px; }
-        .online { color: #10b981; text-shadow: 0 0 5px rgba(16,185,129,0.3); }
-        .syncing { color: #f59e0b; text-shadow: 0 0 5px rgba(245,158,11,0.3); }
-        .offline { color: #ef4444; text-shadow: 0 0 5px rgba(239,68,68,0.3); }
-
-        .form-section { background: var(--panel); border: 1px solid var(--border); padding: 15px; border-radius: 16px; margin-bottom: 25px; }
-        .item { background: var(--panel); border: 1px solid var(--border); padding: 18px; border-radius: 16px; margin-bottom: 15px; border-left: 6px solid #334155; text-align: left; }
-        .item.completed { opacity: 0.5; filter: grayscale(0.4); border-left-color: #475569 !important; }
-
-        .meta-line { font-size: 11px; font-weight: 700; color: var(--accent); display: block; margin-bottom: 4px; }
-        .time-line { font-size: 10px; color: var(--text-muted); display: block; margin-bottom: 8px; }
-        .comments-area { background: rgba(15, 23, 42, 0.6); border-radius: 10px; padding: 10px; margin-top: 10px; border: 1px solid var(--border); }
-        .comment-item { font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 4px 0; }
-
-        .group-header { font-size: 11px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; margin: 25px 0 12px; display: flex; align-items: center; gap: 10px; }
+        .group-header { font-size: 11px; font-weight: 900; color: #64748b; text-transform: uppercase; margin: 25px 0 12px; display: flex; align-items: center; gap: 10px; }
         .group-header::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-        .countdown-badge { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; background: rgba(99,102,241,0.15); color: var(--accent); }
+
+        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--border); grid-template-columns: 1fr 1fr; z-index: 3000; padding: 10px; gap: 10px; }
+        .nav-btn { background: transparent; border: none; padding: 10px; color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: 800; display: flex; flex-direction: column; align-items: center; }
+        .nav-btn.active { color: var(--accent); }
+
+        #userPortal { max-width: 800px; margin: 0 auto; display: none; padding-top: 20px; width: 100%; }
+        .page-header { border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        
+        #adminDashboard { display: none; max-width: 1400px; margin: 0 auto; width: 100%; padding-bottom: 100px; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 25px 0; border-bottom: 1px solid var(--border); margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .col-requests { display: none; } .mobile-nav { display: grid; } }
+
+        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 25px; }
+        .item { background: rgba(15, 23, 42, 0.5); border: 1px solid var(--border); padding: 18px; border-radius: 14px; margin-bottom: 15px; border-left: 8px solid var(--accent); position: relative; }
+        .pri-High { border-left-color: var(--high); }
+        .pri-Medium { border-left-color: var(--med); }
+        .pri-Low { border-left-color: var(--low); }
+        
+        .badge-timer { font-size: 10px; font-weight: 900; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--med); float: right; }
+        .fixed-date { font-size: 10px; color: #64748b; font-weight: 600; margin-bottom: 5px; display: block; }
+        .comment-section { margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+        .comment-bubble { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; margin-top: 8px; font-size: 11px; border-left: 2px solid var(--accent); }
+        .footer { text-align: center; padding: 20px; font-size: 11px; color: var(--med); font-weight: 400; letter-spacing: 1px; margin-top: auto; }
+        .footer span { font-size: 9px; opacity: 0.8; margin-left: 5px; }
+        .sync-ind { font-size: 10px; font-weight: 800; }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-box">
-        <h1>ERC PORTAL</h1>
-        <input type="password" id="passInput" placeholder="Enter Key" style="text-align:center;">
-        <button class="btn-primary" onclick="attemptLogin()">Sign In</button>
-    </div>
-</div>
-
-<div id="userView">
-    <h2 style="color:var(--accent)">Portal Submission</h2>
-    <div class="user-toggle">
-        <div id="u-tab-t" class="u-btn active" onclick="setMode('t')">🎫<br>IT Ticket</div>
-        <div id="u-tab-r" class="u-btn" onclick="setMode('r')">📅<br>Schedule Task</div>
-    </div>
-    <div class="item" style="border-left:none;">
-        <div style="display:flex; gap:10px;"><input id="u_name" placeholder="Your Name"><input id="u_loc" placeholder="Location"></div>
-        <input id="u_title" placeholder="Title">
-        <textarea id="u_desc" placeholder="Details..." rows="3"></textarea>
-        <div id="u_extra" style="display:none; flex-direction:column; gap:10px; margin-bottom:10px;">
-            <label style="font-size:10px; color:var(--accent); text-align:left; font-weight:800;">CHOOSE DATE & TIME:</label>
-            <div style="display:flex; gap:10px;"><input type="date" id="u_date"><input type="time" id="u_time"></div>
+        <h1 style="margin:0; font-weight: 800; letter-spacing: -1px; font-size: 22px;">ERC CLOUD TICKETING</h1>
+        <div style="margin: 20px 0; line-height: 1.6;">
+            <b style="color: var(--accent); font-size: 14px;">Welcome to ERC Ticketing System</b><br>
+            <span style="font-size: 11px; opacity: 0.7;">Enter security key to access IT Support and Scheduling.</span>
         </div>
-        <button class="btn-primary" id="submitBtn" onclick="submitUserForm()">Submit Ticket</button>
+        <input type="password" id="passInput" placeholder="Security Key" style="text-align: center;">
+        <button class="btn-primary" onclick="handleAuth()">LOGIN</button>
     </div>
-    <button onclick="location.reload()" style="opacity:0.5; border:none; margin-top:20px;">LOGOUT</button>
+    <div class="footer">DEVELOPED BY MAREK <span style="color:orange">v20.9.1</span></div>
 </div>
 
-<div id="adminView">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2>ADMIN CONSOLE <span id="statusDisplay" class="online"><span class="status-dot">●</span>Online</span></h2>
-        <div style="display:flex; gap:10px;"><button onclick="sync()">🔄</button><button onclick="location.reload()" style="color:var(--high)">🔒</button></div>
+<div class="mobile-nav" id="adminMobNav" style="display:none;">
+    <button class="nav-btn active" id="btnTickets" onclick="switchTab('tickets')">🛠️<br>Tickets</button>
+    <button class="nav-btn" id="btnSchedule" onclick="switchTab('requests')">📅<br>Schedule</button>
+</div>
+
+<div id="userPortal">
+    <div class="page-header">
+        <div><h1 style="margin:0; font-weight: 800; font-size: 20px;">Staff Support</h1><span class="sync-ind uSyncStat">● INITIALIZING</span></div>
+        <button class="btn-logoff" onclick="location.reload()">LOG OFF</button>
     </div>
-    <div class="container">
-        <div id="col-tickets">
-            <h3 style="color:var(--accent)">Active Tickets</h3>
-            <div class="form-section">
-                <div style="display:flex; gap:10px;"><input id="at_name" placeholder="Requester"><input id="at_loc" placeholder="Location"></div>
-                <input id="at_title" placeholder="Title">
-                <textarea id="at_desc" placeholder="Notes..." rows="2"></textarea>
-                <div style="display:flex; gap:10px;"><select id="at_pri" style="flex:1"><option>Low</option><option selected>Medium</option><option>High</option></select>
-                <button class="btn-primary" style="flex:1" onclick="addItem('t')">Add Ticket</button></div>
+    <div id="uHome">
+        <div style="display: grid; gap: 15px; margin-top: 10px;">
+            <div class="card" onclick="openUForm('tickets')" style="cursor:pointer; text-align:center;">
+                <h3 style="color:var(--accent); margin-bottom:5px;">🛠️ IT Ticket</h3>
+                <p style="font-size:12px; opacity:0.7;">Broken PC, Wi-Fi or Software issues.</p>
             </div>
-            <div id="ticketList"></div>
-            <div class="group-header">✅ Completed Tickets</div>
-            <div id="compTicketList"></div>
-        </div>
-        <div id="col-requests">
-            <h3 style="color:var(--accent)">Active Tasks</h3>
-            <div class="form-section">
-                <div style="display:flex; gap:10px;"><input id="as_name" placeholder="Name"><input id="as_loc" placeholder="Location"></div>
-                <input id="as_title" placeholder="Title">
-                <div style="display:flex; gap:10px;"><input type="date" id="as_date"><input type="time" id="as_time"></div>
-                <button class="btn-primary" style="margin-top:10px;" onclick="addItem('r')">Add Task</button>
+            <div class="card" onclick="openUForm('requests')" style="cursor:pointer; text-align:center;">
+                <h3 style="color:var(--accent); margin-bottom:5px;">📅 Schedule Request</h3>
+                <p style="font-size:12px; opacity:0.7;">Hall set up, exam bookings etc.</p>
             </div>
-            <div id="scheduleList"></div>
-            <div class="group-header">✅ Completed Tasks</div>
-            <div id="compScheduleList"></div>
         </div>
     </div>
-    <div class="mobile-nav">
-        <button id="btn-t" onclick="switchTab('t')" style="background:var(--accent); color:white;">TICKETS</button>
-        <button id="btn-r" onclick="switchTab('r')">SCHEDULE</button>
+    <div id="uForm" style="display:none;" class="user-form-wrap">
+        <button onclick="goBackToOptions()" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight: 800; margin-bottom: 20px; padding:0;">← BACK</button>
+        <h2 id="formTitle" style="margin:0 0 15px 0;">New Entry</h2>
+        <div style="display:flex; gap:10px;"><input id="un" placeholder="Name"><input id="ul" placeholder="Location"></div>
+        <input id="ut" placeholder="Title"><textarea id="ud" placeholder="Details..." rows="4"></textarea>
+        <div id="uTimeRow" style="display:none; gap:10px;"><input type="date" id="udate"><input type="time" id="utime"></div>
+        <button class="btn-primary" onclick="submitEntry('user')">SUBMIT</button>
     </div>
+    <div class="footer">DEVELOPED BY MAREK <span style="color:orange">v20.9.1</span></div>
 </div>
 
-<input type="color" id="colorPicker" style="display:none">
+<div id="adminDashboard">
+    <div class="top-nav">
+        <div><h2 style="margin:0; font-size:18px;">ERC Admin</h2><span class="sync-ind aSyncStat">● ONLINE</span></div>
+        <div style="display:flex; gap:10px;"><button onclick="sync()">🔄</button><button class="btn-logoff" onclick="location.reload()">LOG OFF</button></div>
+    </div>
+    <div class="grid">
+        <div class="col col-tickets">
+            <h3 style="color:var(--accent); font-size:13px;">IT SERVICE DESK</h3>
+            <div class="card">
+                <div style="display:flex; gap:10px;"><input id="an" placeholder="Name" value="ADMIN"><input id="al" placeholder="Loc" value="HQ"></div>
+                <input id="at" placeholder="Issue Title"><textarea id="ad" placeholder="Notes..." rows="2"></textarea>
+                <select id="ap" onchange="this.className='sel-'+this.value"><option value="Low">Low</option><option value="Medium" selected>Medium</option><option value="High">High</option></select>
+                <button class="btn-primary" onclick="submitEntry('admin_t')">LOG TICKET</button>
+            </div>
+            <div id="list_t"></div>
+            <div class="group-header">Resolved Archive</div>
+            <div id="list_ct" style="opacity:0.4"></div>
+        </div>
+        <div class="col col-requests">
+            <h3 style="color:var(--accent); font-size:13px;">COMMAND SCHEDULE</h3>
+            <div class="card">
+                <div style="display:flex; gap:10px;"><input id="rn" placeholder="Name" value="ADMIN"><input id="rl" placeholder="Loc" value="HQ"></div>
+                <input id="rt" placeholder="Event Name"><textarea id="rd" placeholder="Details..." rows="2"></textarea>
+                <div style="display:flex; gap:10px;"><input type="date" id="rdt"><input type="time" id="rtm"></div>
+                <button class="btn-primary" onclick="submitEntry('admin_r')">SAVE EVENT</button>
+            </div>
+            <div id="list_r"></div>
+            <div class="group-header">Completed Tasks</div>
+            <div id="list_cr" style="opacity:0.4"></div>
+        </div>
+    </div>
+    <div class="footer">DEVELOPED BY MAREK <span style="color:orange">v20.9.1</span></div>
+</div>
 
 <script>
-    const API = "https://script.google.com/macros/s/AKfycbyY5ZDOpdvFkyhUwE6iqAQHNidEOA-5TMq-P-IEiwRW7fRDPzBxS1DZ4g61ugRRUVchsQ/exec";
-    let db = { tickets: [], requests: [], comp_t: [], comp_r: [] };
-    let currentMode = 't';
+    const BID = "69aa94e043b1c97be9b92366", BKY = "$2a$10$LcuMUR7SD/38OregXC.CzeyHWkLRkdXn9cD6nnrN4xGeAPXmJzlTC";
+    let db = { tickets:[], requests:[], comp_t:[], comp_r:[] }, isAdmin = false;
 
-    function setStatus(type) {
-        const s = document.getElementById('statusDisplay');
-        if(type === 'online') { s.innerHTML = '<span class="status-dot">●</span>Online'; s.className = 'online'; }
-        else if(type === 'syncing') { s.innerHTML = '<span class="status-dot">●</span>Syncing'; s.className = 'syncing'; }
-        else { s.innerHTML = '<span class="status-dot">●</span>Offline'; s.className = 'offline'; }
+    function handleAuth() {
+        const p = document.getElementById('passInput').value;
+        if(p === "Admin2026!") { isAdmin=true; document.getElementById('loginOverlay').style.display='none'; document.getElementById('adminDashboard').style.display='block'; if(window.innerWidth <= 900) document.getElementById('adminMobNav').style.display='grid'; sync(); }
+        else if(p === "ERCUSER") { isAdmin=false; document.getElementById('loginOverlay').style.display='none'; document.getElementById('userPortal').style.display='block'; sync(); }
+        else alert("Denied");
     }
 
-    function attemptLogin() {
-        const val = document.getElementById('passInput').value;
-        if(btoa(val) === "RVJDMjAyNg==") { document.getElementById('loginOverlay').style.display='none'; document.getElementById('adminView').style.display='block'; sync(); }
-        else if(btoa(val) === "VVNFUjIwMjY=") { document.getElementById('loginOverlay').style.display='none'; document.getElementById('userView').style.display='block'; }
-        else alert("Invalid Key");
+    function switchTab(tab) {
+        document.querySelector('.col-tickets').style.display = tab === 'tickets' ? 'block' : 'none';
+        document.querySelector('.col-requests').style.display = tab === 'requests' ? 'block' : 'none';
+        document.getElementById('btnTickets').classList.toggle('active', tab === 'tickets');
+        document.getElementById('btnSchedule').classList.toggle('active', tab === 'requests');
     }
 
-    function setMode(m) { 
-        currentMode = m; 
-        document.getElementById('u-tab-t').className = 'u-btn ' + (m==='t'?'active':'');
-        document.getElementById('u-tab-r').className = 'u-btn ' + (m==='r'?'active':'');
-        document.getElementById('u_extra').style.display = m==='r'?'flex':'none';
-        document.getElementById('submitBtn').innerText = m==='t'?'Submit Ticket':'Submit Request';
-    }
+    function openUForm(t) { document.getElementById('uHome').style.display='none'; document.getElementById('uForm').style.display='block'; document.getElementById('uTimeRow').style.display = t==='requests'?'flex':'none'; document.getElementById('formTitle').innerText = t==='tickets' ? 'New IT Ticket' : 'New Schedule Request'; window.curU = t; }
+    function goBackToOptions() { document.getElementById('uForm').style.display='none'; document.getElementById('uHome').style.display='block'; }
 
     async function sync() {
-        setStatus('syncing');
+        const inds = document.querySelectorAll('.sync-ind');
+        inds.forEach(el => { el.innerText = "● SYNCING..."; el.style.color = "#fbbf24"; });
         try {
-            const r = await fetch(API + '?t=' + Date.now());
-            const data = await r.json();
-            db = { tickets: data.tickets||[], requests: data.requests||[], comp_t: data.comp_t||[], comp_r: data.comp_r||[] };
-            draw(); setStatus('online');
-        } catch(e) { setStatus('offline'); }
+            const res = await fetch(`https://api.jsonbin.io/v3/b/${BID}/latest`, { headers: { "X-Master-Key": BKY, "X-Bin-Meta": "false" } });
+            db = await res.json(); render();
+            inds.forEach(el => { el.innerText = "● CLOUD ONLINE"; el.style.color = "#10b981"; });
+        } catch (e) { inds.forEach(el => { el.innerText = "● ERROR"; el.style.color = "#ff4d4d"; }); }
     }
 
-    async function save() {
-        setStatus('syncing');
-        try {
-            await fetch(API, { method:"POST", mode:"no-cors", body: JSON.stringify(db) });
-            setTimeout(sync, 1500);
-        } catch(e) { setStatus('offline'); }
+    async function save() { await fetch(`https://api.jsonbin.io/v3/b/${BID}`, { method: 'PUT', headers: { "Content-Type": "application/json", "X-Master-Key": BKY }, body: JSON.stringify(db) }); sync(); }
+
+    function submitEntry(mode) {
+        let list = ''; let item = { id: Date.now(), ts: Date.now(), comments: [] };
+        if(mode === 'user') { item = { ...item, user: document.getElementById('un').value, loc: document.getElementById('ul').value, title: document.getElementById('ut').value, desc: document.getElementById('ud').value, pri: 'Medium', date: document.getElementById('udate').value, time: document.getElementById('utime').value }; list = window.curU; }
+        else if(mode === 'admin_t') { item = { ...item, user: document.getElementById('an').value, loc: document.getElementById('al').value, title: document.getElementById('at').value, desc: document.getElementById('ad').value, pri: document.getElementById('ap').value }; list = 'tickets'; }
+        else { item = { ...item, user: document.getElementById('rn').value, loc: document.getElementById('rl').value, title: document.getElementById('rt').value, desc: document.getElementById('rd').value, pri: 'Low', date: document.getElementById('rdt').value, time: document.getElementById('rtm').value }; list = 'requests'; }
+        if(!item.title || !item.user) return alert("Fill Name and Title");
+        db[list].unshift(item); save();
+        if(mode === 'user') { alert("Submitted!"); location.reload(); }
     }
 
-    async function submitUserForm() {
-        const n = document.getElementById('u_name').value, t = document.getElementById('u_title').value;
-        const btn = document.getElementById('submitBtn');
-        if(!n || !t) return alert("Missing Info");
-        btn.innerText = "Sending..."; btn.disabled = true;
-        try {
-            const entry = { id: Date.now(), requester: n, location: document.getElementById('u_loc').value||"Office", title: t, description: document.getElementById('u_desc').value, priority: "Medium", comments: [], created: new Date().toLocaleString('en-GB') };
-            if(currentMode==='r') { entry.date = document.getElementById('u_date').value; entry.time = document.getElementById('u_time').value||"09:00"; }
-            const r = await fetch(API + '?t=' + Date.now()); const d = await r.json();
-            db = { tickets: d.tickets||[], requests: d.requests||[], comp_t: d.comp_t||[], comp_r: d.comp_r||[] };
-            if(currentMode==='t') db.tickets.unshift(entry); else db.requests.push(entry);
-            await fetch(API, { method:"POST", mode:"no-cors", body: JSON.stringify(db) });
-            btn.innerText = "Success!"; btn.classList.add('btn-success');
-            setTimeout(() => location.reload(), 1500);
-        } catch(e) { btn.innerText = "Error"; btn.disabled = false; }
-    }
+    function formatT(ms, isC = false) { const d = Math.floor(Math.abs(ms) / 86400000); const h = Math.floor((Math.abs(ms) % 86400000) / 3600000); return isC ? (ms > 0 ? `In ${d}d ${h}h` : `Past`) : `🕒 ${d}d ${h}h`; }
+    function prettyDate(dateStr) { if(!dateStr) return ""; const p = dateStr.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : dateStr; }
 
-    function addItem(type) {
-        const prefix = type === 't' ? 'at_' : 'as_';
-        const t = document.getElementById(prefix+'title').value; if(!t) return;
-        const entry = { id: Date.now(), requester: document.getElementById(prefix+'name').value||"ADMIN", location: document.getElementById(prefix+'loc').value||"HQ", title: t, description: document.getElementById(type==='t'?'at_desc':'')?.value||"", priority: document.getElementById('at_pri')?.value||"Medium", comments: [], created: new Date().toLocaleString('en-GB') };
-        if(type==='r') { entry.date = document.getElementById('as_date').value; entry.time = document.getElementById('as_time').value||"09:00"; }
-        if(type==='t') db.tickets.unshift(entry); else db.requests.push(entry);
-        document.getElementById(prefix+'title').value = ''; draw(); save();
+    function render() {
+        if(!isAdmin) return;
+        const ui = (i, l) => {
+            const isR = l.includes('requests') || l === 'comp_r'; const isC = l.includes('comp');
+            const t = (i.date && i.time) ? formatT(new Date(`${i.date}T${i.time}`).getTime() - Date.now(), true) : formatT(Date.now() - i.ts);
+            let ds = isR ? `Event: ${prettyDate(i.date)} @ ${i.time}` : `Logged: ${new Date(i.ts).toLocaleDateString('en-GB')}`;
+            return `<div class="item ${!isR ? 'pri-'+i.pri : ''}">
+                <span class="badge-timer">${t}</span>
+                <div style="font-size:10px; font-weight:800; color:var(--accent);">👤 ${i.user} | 📍 ${i.loc}</div>
+                <span class="fixed-date">${ds}</span>
+                <b style="font-size:15px; display:block; margin:5px 0;">${i.title}</b>
+                <div style="font-size:12px; opacity:0.8;">${i.desc}</div>
+                <div class="comment-section">${(i.comments || []).map(c => `<div class="comment-bubble">${c.txt}<span style="display:block;font-size:9px;opacity:0.4;margin-top:4px;">${c.date}</span></div>`).join('')}</div>
+                <div style="margin-top:12px; display:flex; gap:10px;">
+                    <button onclick="const m=prompt('Comment:'); if(m){db['${l}'].find(x=>x.id==${i.id}).comments.push({txt:m, date:new Date().toLocaleString()}); save();}">💬</button>
+                    <button onclick="const idx=db['${l}'].findIndex(x=>x.id==${i.id}); const target = '${l}'==='tickets'?'comp_t':'comp_r'; if('${isC}'==='true'){const rev = '${l}'==='comp_t'?'tickets':'requests'; db[rev].unshift(db['${l}'].splice(idx,1)[0]);} else {db[target].unshift(db['${l}'].splice(idx,1)[0]);} save();">${isC?'🔄':'✅'}</button>
+                    <button onclick="if(confirm('Delete?')){db['${l}'].splice(db['${l}'].findIndex(x=>x.id==${i.id}),1); save();}" style="color:var(--high); background:none; border:none; margin-left:auto;">DEL</button>
+                </div>
+            </div>`;
+        };
+        document.getElementById('list_t').innerHTML = db.tickets.map(i => ui(i, 'tickets')).join('');
+        document.getElementById('list_ct').innerHTML = db.comp_t.map(i => ui(i, 'comp_t')).join('');
+        const todayStr = new Date().toISOString().split('T')[0];
+        const sr = [...db.requests].sort((a,b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+        document.getElementById('list_r').innerHTML = `<div class="group-header">Today</div>` + sr.filter(r => r.date === todayStr).map(i => ui(i, 'requests')).join('') + `<div class="group-header">Upcoming</div>` + sr.filter(r => r.date > todayStr || !r.date).map(i => ui(i, 'requests')).join('');
+        document.getElementById('list_cr').innerHTML = db.comp_r.map(i => ui(i, 'comp_r')).join('');
     }
-
-    function move(from, to, id) {
-        const item = db[from].find(x => x.id == id);
-        if(item) { db[from] = db[from].filter(x => x.id != id); db[to].unshift(item); draw(); save(); }
-    }
-
-    function doDel(type, id) { if(confirm("Delete?")) { db[type] = db[type].filter(x=>x.id!=id); draw(); save(); } }
-
-    function drawItem(item, type) {
-        const isComp = type.startsWith('comp');
-        const isTask = type === 'requests' || type === 'comp_r';
-        return `
-        <div class="item ${isComp?'completed':''}" style="border-left-color:${item.color||'#334155'}">
-            <span class="meta-line">👤 ${item.requester} | 📍 ${item.location}</span>
-            <span class="time-line">${isTask ? item.date + ' @ ' + item.time : 'Created: '+item.created}</span>
-            <b style="font-size:14px; display:block;">${item.title}</b>
-            <p style="font-size:12px; opacity:0.8;">${item.description||''}</p>
-            <div style="display:flex; gap:8px; margin-top:10px;">
-                ${isComp ? `<button onclick="move('${type}', '${type==='comp_t'?'tickets':'requests'}', ${item.id})">🔄</button>` : 
-                           `<button onclick="move('${type}', '${type==='tickets'?'comp_t':'comp_r'}', ${item.id})">✅</button>`}
-                <button onclick="const m=prompt('Comment:'); if(m){item.comments.push({text:m, date:new Date().toLocaleTimeString()}); draw(); save();}">💬</button>
-                <button onclick="const cp=document.getElementById('colorPicker'); cp.oninput=(e)=>{item.color=e.target.value; draw(); save();}; cp.click();">🎨</button>
-                <button onclick="doDel('${type}', ${item.id})" style="color:var(--high); margin-left:auto; border:none; background:none;">Del</button>
-            </div>
-            ${item.comments.length ? `<div class="comments-area">${item.comments.map(c=>`<div class="comment-item"><b>${c.date}</b>: ${c.text}</div>`).join('')}</div>` : ''}
-        </div>`;
-    }
-
-    function draw() {
-        document.getElementById('ticketList').innerHTML = db.tickets.map(t=>drawItem(t, 'tickets')).join('');
-        document.getElementById('compTicketList').innerHTML = db.comp_t.map(t=>drawItem(t, 'comp_t')).join('');
-        document.getElementById('scheduleList').innerHTML = db.requests.map(r=>drawItem(r, 'requests')).join('');
-        document.getElementById('compScheduleList').innerHTML = db.comp_r.map(r=>drawItem(r, 'comp_r')).join('');
-    }
-
-    function switchTab(t) {
-        document.getElementById('col-tickets').style.display = t === 't' ? 'block' : 'none';
-        document.getElementById('col-requests').style.display = t === 'r' ? 'block' : 'none';
-        document.getElementById('btn-t').style.background = t === 't' ? 'var(--accent)' : 'transparent';
-        document.getElementById('btn-r').style.background = t === 'r' ? 'var(--accent)' : 'transparent';
-    }
+    setInterval(render, 60000);
 </script>
 </body>
 </html>
