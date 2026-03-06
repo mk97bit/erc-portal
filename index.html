@@ -10,25 +10,16 @@
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { margin: 0; background: var(--bg); color: var(--text); padding: 15px; font-size: 14px; min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* LOGIN BOX CENTERED FIX */
         #loginOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 4000; width: 100%; height: 100%; }
-        .login-box { 
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--panel); 
-            padding: 40px; 
-            border-radius: 24px; 
-            border: 1px solid var(--border); 
-            width: 90%; 
-            max-width: 400px; 
-            text-align: center; 
-        }
+        .login-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--panel); padding: 40px; border-radius: 24px; border: 1px solid var(--border); width: 90%; max-width: 400px; text-align: center; }
         .login-footer { position: absolute; bottom: 30px; left: 0; right: 0; text-align: center; }
 
         input, textarea, select { width: 100%; background: #0f172a; border: 1px solid var(--border); border-radius: 10px; padding: 12px; color: white !important; margin-bottom: 10px; font-size: 13px; outline: none; resize: none; }
         
+        .sel-High { border-color: var(--high); color: var(--high) !important; }
+        .sel-Medium { border-color: var(--med); color: var(--med) !important; }
+        .sel-Low { border-color: var(--low); color: var(--low) !important; }
+
         button { border: 1px solid var(--border); padding: 10px 16px; border-radius: 10px; cursor: pointer; background: var(--panel); color: white; font-weight: 700; font-size: 11px; transition: 0.2s; }
         .btn-primary { background: var(--accent); border: none; width: 100%; height: 48px; font-size: 15px; margin-top: 5px; letter-spacing: 1px; }
         .btn-logoff { background: rgba(255, 77, 77, 0.1); color: var(--high); border-color: var(--high); }
@@ -76,7 +67,7 @@
         <input type="password" id="passInput" placeholder="Security Key" style="text-align: center;">
         <button class="btn-primary" onclick="handleAuth()">LOGIN</button>
     </div>
-    <div class="footer login-footer">DEVELOPED BY MAREK <span style="color:orange">v20.9.2</span></div>
+    <div class="footer login-footer">DEVELOPED BY MAREK <span style="color:orange">v20.9.4</span></div>
 </div>
 
 <div class="mobile-nav" id="adminMobNav" style="display:none;">
@@ -109,7 +100,7 @@
         <div id="uTimeRow" style="display:none; gap:10px;"><input type="date" id="udate"><input type="time" id="utime"></div>
         <button class="btn-primary" onclick="submitEntry('user')">SUBMIT</button>
     </div>
-    <div class="footer">DEVELOPED BY MAREK <span style="color:orange">v20.9.2</span></div>
+    <div class="footer">DEVELOPED BY MAREK <span style="color:orange">v20.9.4</span></div>
 </div>
 
 <div id="adminDashboard">
@@ -123,7 +114,11 @@
             <div class="card">
                 <div style="display:flex; gap:10px;"><input id="an" placeholder="Name" value="ADMIN"><input id="al" placeholder="Loc" value="HQ"></div>
                 <input id="at" placeholder="Issue Title"><textarea id="ad" placeholder="Notes..." rows="2"></textarea>
-                <select id="ap" onchange="this.className='sel-'+this.value"><option value="Low">Low</option><option value="Medium" selected>Medium</option><option value="High">High</option></select>
+                <select id="ap" onchange="this.className='sel-'+this.value" class="sel-Medium">
+                    <option value="Low">Low</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="High">High</option>
+                </select>
                 <button class="btn-primary" onclick="submitEntry('admin_t')">LOG TICKET</button>
             </div>
             <div id="list_t"></div>
@@ -143,7 +138,7 @@
             <div id="list_cr" style="opacity:0.4"></div>
         </div>
     </div>
-    <div class="footer">DEVELOPED BY MAREK <span style="color:orange">v20.9.2</span></div>
+    <div class="footer">DEVELOPED BY MAREK <span style="color:orange">v20.9.4</span></div>
 </div>
 
 <script>
@@ -189,6 +184,7 @@
         if(mode === 'user') { alert("Submitted!"); location.reload(); }
     }
 
+    function changePri(id, newPri) { const t = db.tickets.find(x => x.id == id); if(t) { t.pri = newPri; save(); } }
     function formatT(ms, isC = false) { const d = Math.floor(Math.abs(ms) / 86400000); const h = Math.floor((Math.abs(ms) % 86400000) / 3600000); return isC ? (ms > 0 ? `In ${d}d ${h}h` : `Past`) : `🕒 ${d}d ${h}h`; }
     function prettyDate(dateStr) { if(!dateStr) return ""; const p = dateStr.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : dateStr; }
 
@@ -198,10 +194,20 @@
             const isR = l.includes('requests') || l === 'comp_r'; const isC = l.includes('comp');
             const t = (i.date && i.time) ? formatT(new Date(`${i.date}T${i.time}`).getTime() - Date.now(), true) : formatT(Date.now() - i.ts);
             let ds = isR ? `Event: ${prettyDate(i.date)} @ ${i.time}` : `Logged: ${new Date(i.ts).toLocaleDateString('en-GB')}`;
+            
+            // PRIORITY SELECT FOR INDIVIDUAL TICKETS
+            const priSelect = (!isR && !isC) ? `
+                <select onchange="changePri(${i.id}, this.value)" style="width: auto; margin: 5px 0; padding: 4px 8px; font-size: 10px; height: auto;" class="sel-${i.pri}">
+                    <option value="Low" ${i.pri==='Low'?'selected':''}>Low</option>
+                    <option value="Medium" ${i.pri==='Medium'?'selected':''}>Medium</option>
+                    <option value="High" ${i.pri==='High'?'selected':''}>High</option>
+                </select>` : '';
+
             return `<div class="item ${!isR ? 'pri-'+i.pri : ''}">
                 <span class="badge-timer">${t}</span>
                 <div style="font-size:10px; font-weight:800; color:var(--accent);">👤 ${i.user} | 📍 ${i.loc}</div>
                 <span class="fixed-date">${ds}</span>
+                ${priSelect}
                 <b style="font-size:15px; display:block; margin:5px 0;">${i.title}</b>
                 <div style="font-size:12px; opacity:0.8;">${i.desc}</div>
                 <div class="comment-section">${(i.comments || []).map(c => `<div class="comment-bubble">${c.txt}<span style="display:block;font-size:9px;opacity:0.4;margin-top:4px;">${c.date}</span></div>`).join('')}</div>
