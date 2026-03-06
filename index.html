@@ -142,7 +142,9 @@
 </div>
 
 <script>
-    const BID = "69aa94e043b1c97be9b92366", BKY = "$2a$10$LcuMUR7SD/38OregXC.CzeyHWkLRkdXn9cD6nnrN4xGeAPXmJzlTC";
+    // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
+    const API_URL = "https://script.google.com/macros/s/AKfycbx9ZwBjXqNY8Pi4xexlvdrhSaPNaKjlmdEGzlzHlUZhHWuc5O-YrzASFob4hTB5atWT/exec";
+    
     let db = { tickets:[], requests:[], comp_t:[], comp_r:[] }, isAdmin = false;
 
     function handleAuth() {
@@ -166,13 +168,22 @@
         const inds = document.querySelectorAll('.sync-ind');
         inds.forEach(el => { el.innerText = "● SYNCING..."; el.style.color = "#fbbf24"; });
         try {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${BID}/latest`, { headers: { "X-Master-Key": BKY, "X-Bin-Meta": "false" } });
+            const res = await fetch(API_URL);
             db = await res.json(); render();
             inds.forEach(el => { el.innerText = "● CLOUD ONLINE"; el.style.color = "#10b981"; });
         } catch (e) { inds.forEach(el => { el.innerText = "● ERROR"; el.style.color = "#ff4d4d"; }); }
     }
 
-    async function save() { await fetch(`https://api.jsonbin.io/v3/b/${BID}`, { method: 'PUT', headers: { "Content-Type": "application/json", "X-Master-Key": BKY }, body: JSON.stringify(db) }); sync(); }
+    async function save() { 
+        await fetch(API_URL, { 
+            method: 'POST', 
+            mode: 'no-cors', // Google Apps Script requires no-cors for simple posts
+            headers: { "Content-Type": "application/json" }, 
+            body: JSON.stringify(db) 
+        }); 
+        // Small delay because no-cors doesn't wait for completion
+        setTimeout(sync, 800);
+    }
 
     function submitEntry(mode) {
         let list = ''; let item = { id: Date.now(), ts: Date.now(), comments: [] };
@@ -195,7 +206,6 @@
             const t = (i.date && i.time) ? formatT(new Date(`${i.date}T${i.time}`).getTime() - Date.now(), true) : formatT(Date.now() - i.ts);
             let ds = isR ? `Event: ${prettyDate(i.date)} @ ${i.time}` : `Logged: ${new Date(i.ts).toLocaleDateString('en-GB')}`;
             
-            // PRIORITY SELECT FOR INDIVIDUAL TICKETS
             const priSelect = (!isR && !isC) ? `
                 <select onchange="changePri(${i.id}, this.value)" style="width: auto; margin: 5px 0; padding: 4px 8px; font-size: 10px; height: auto;" class="sel-${i.pri}">
                     <option value="Low" ${i.pri==='Low'?'selected':''}>Low</option>
