@@ -4,272 +4,267 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <title>ERC Cloud Ticketing</title>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg: #080c14;
-            --panel: #0f1623;
-            --panel2: #161f30;
-            --text: #e8edf5;
-            --muted: #4a5568;
-            --accent: #3b82f6;
-            --accent2: #60a5fa;
-            --high: #f87171;
-            --med: #fbbf24;
-            --low: #34d399;
-            --border: #1e2d45;
-            --border2: #243650;
+            --bg: #f0f2f5;
+            --surface: #ffffff;
+            --surface2: #f8f9fb;
+            --text: #1a1d23;
+            --text2: #6b7280;
+            --accent: #2563eb;
+            --accent-light: #eff6ff;
+            --high: #dc2626;
+            --high-light: #fef2f2;
+            --med: #d97706;
+            --med-light: #fffbeb;
+            --low: #16a34a;
+            --low-light: #f0fdf4;
+            --border: #e5e7eb;
+            --border2: #d1d5db;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
 
-        /* ── SCANLINE TEXTURE ── */
-        body::before { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px); pointer-events: none; z-index: 9999; }
+        /* ── LOADING ── */
+        .loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
+        .loading-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { font-size: 13px; color: var(--text2); font-weight: 500; }
 
         /* ── LOGIN ── */
-        #loginOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .login-wrap { width: 90%; max-width: 420px; }
-        .login-logo { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 40px; display: flex; align-items: center; gap: 12px; }
-        .login-logo::before, .login-logo::after { content: ''; flex: 1; height: 1px; background: var(--border2); }
-        .login-box { background: var(--panel); border: 1px solid var(--border2); border-radius: 4px; padding: 40px; position: relative; overflow: hidden; }
-        .login-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); }
-        .login-title { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; letter-spacing: -1px; margin-bottom: 6px; }
-        .login-sub { font-size: 12px; color: var(--muted); margin-bottom: 32px; line-height: 1.6; }
-        .field-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
-        .login-input { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: 3px; padding: 14px 16px; color: var(--text); font-family: 'Space Mono', monospace; font-size: 14px; outline: none; transition: border-color 0.2s; letter-spacing: 2px; }
-        .login-input:focus { border-color: var(--accent); }
-        .login-btn { width: 100%; margin-top: 20px; background: var(--accent); border: none; border-radius: 3px; padding: 15px; color: white; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 3px; cursor: pointer; transition: 0.2s; font-weight: 700; }
-        .login-btn:hover { background: var(--accent2); }
-        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .login-error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); border-radius: 3px; padding: 12px; font-size: 12px; color: var(--high); margin-top: 16px; display: none; font-family: 'Space Mono', monospace; }
-        .login-footer { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); text-align: center; margin-top: 32px; letter-spacing: 2px; }
+        #loginOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 4000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .login-wrap { width: 100%; max-width: 400px; }
+        .login-header { text-align: center; margin-bottom: 28px; }
+        .login-logo { font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+        .login-logo span { color: var(--accent); }
+        .login-tagline { font-size: 13px; color: var(--text2); margin-top: 4px; }
+        .login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; box-shadow: var(--shadow-md); }
+        .field-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: block; }
+        .field-wrap { margin-bottom: 16px; }
+        .login-input { width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 11px 14px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+        .login-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .login-btn { width: 100%; margin-top: 8px; background: var(--accent); border: none; border-radius: 8px; padding: 12px; color: white; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.15s; }
+        .login-btn:hover { background: #1d4ed8; }
+        .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .login-error { background: var(--high-light); border: 1px solid #fecaca; border-radius: 8px; padding: 11px 14px; font-size: 13px; color: var(--high); margin-top: 14px; display: none; }
+        .login-footer { text-align: center; margin-top: 20px; font-size: 12px; color: var(--text2); }
 
-        /* ── SHARED ── */
-        input, textarea, select { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: 3px; padding: 11px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; resize: none; transition: border-color 0.2s; }
-        input:focus, textarea:focus, select:focus { border-color: var(--accent); }
-        select option { background: var(--panel); }
-        .sel-High { border-color: var(--high) !important; color: var(--high) !important; }
-        .sel-Medium { border-color: var(--med) !important; color: var(--med) !important; }
-        .sel-Low { border-color: var(--low) !important; color: var(--low) !important; }
-        button { border: 1px solid var(--border2); padding: 9px 16px; border-radius: 3px; cursor: pointer; background: var(--panel2); color: var(--text); font-weight: 700; font-size: 11px; transition: 0.2s; font-family: 'Space Mono', monospace; letter-spacing: 1px; }
-        button:hover { border-color: var(--accent); color: var(--accent2); }
-        .btn-primary { background: var(--accent); border: none; width: 100%; height: 46px; font-size: 11px; margin-top: 8px; letter-spacing: 3px; color: white; }
-        .btn-primary:hover { background: var(--accent2); color: white; }
-        .btn-logoff { background: rgba(248,77,77,0.08); color: var(--high); border-color: rgba(248,77,77,0.3); }
-        .btn-logoff:hover { background: rgba(248,77,77,0.15); color: var(--high); }
-        .btn-icon { background: none; border: 1px solid var(--border2); padding: 8px 12px; font-size: 13px; }
+        /* ── SHARED INPUTS ── */
+        input, textarea, select { width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 13px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; resize: none; transition: border-color 0.15s, box-shadow 0.15s; }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+        select option { background: white; }
+        .sel-High { border-color: var(--high) !important; color: var(--high) !important; background: var(--high-light) !important; }
+        .sel-Medium { border-color: var(--med) !important; color: var(--med) !important; background: var(--med-light) !important; }
+        .sel-Low { border-color: var(--low) !important; color: var(--low) !important; background: var(--low-light) !important; }
 
-        .sync-ind { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; }
-        .group-header { font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 3px; margin: 28px 0 14px; display: flex; align-items: center; gap: 10px; }
+        /* ── BUTTONS ── */
+        button { border: 1px solid var(--border2); padding: 8px 14px; border-radius: 8px; cursor: pointer; background: var(--surface); color: var(--text); font-weight: 600; font-size: 13px; transition: 0.15s; font-family: 'Inter', sans-serif; }
+        button:hover { background: var(--surface2); }
+        .btn-primary { background: var(--accent); border-color: var(--accent); width: 100%; height: 44px; font-size: 14px; margin-top: 10px; color: white; font-weight: 600; }
+        .btn-primary:hover { background: #1d4ed8; border-color: #1d4ed8; color: white; }
+        .btn-logoff { background: white; color: var(--high); border-color: #fca5a5; font-size: 12px; }
+        .btn-logoff:hover { background: var(--high-light); border-color: var(--high); color: var(--high); }
+        .btn-icon { background: var(--surface2); border: 1px solid var(--border); padding: 6px 12px; font-size: 12px; border-radius: 6px; font-weight: 500; }
+        .btn-icon:hover { background: var(--border); }
+        .btn-del { color: var(--high); background: none; border: none; font-size: 12px; font-weight: 500; opacity: 0.6; margin-left: auto; padding: 6px 8px; }
+        .btn-del:hover { opacity: 1; background: var(--high-light); border-radius: 6px; }
+
+        /* ── MISC ── */
+        .sync-ind { font-size: 11px; font-weight: 600; }
+        .group-header { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin: 24px 0 12px; display: flex; align-items: center; gap: 10px; }
         .group-header::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-        .footer { text-align: center; padding: 30px 20px; font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 3px; margin-top: auto; }
+        .footer { text-align: center; padding: 24px 20px; font-size: 11px; color: var(--text2); margin-top: auto; }
+        .row2 { display: flex; gap: 10px; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 18px; box-shadow: var(--shadow); }
 
         /* ── ITEM CARDS ── */
-        .item { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 18px; margin-bottom: 12px; border-left: 3px solid var(--accent); position: relative; transition: border-color 0.2s; }
-        .item:hover { border-color: var(--border2); }
+        .item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 10px; border-left: 4px solid var(--accent); box-shadow: var(--shadow); transition: box-shadow 0.15s; }
+        .item:hover { box-shadow: var(--shadow-md); }
         .pri-High { border-left-color: var(--high); }
         .pri-Medium { border-left-color: var(--med); }
         .pri-Low { border-left-color: var(--low); }
-        .item-meta { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--accent2); letter-spacing: 1px; margin-bottom: 6px; }
-        .item-date { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-bottom: 8px; display: block; }
-        .item-title { font-size: 15px; font-weight: 800; margin: 6px 0 4px; display: block; }
-        .item-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; }
-        .badge-timer { font-family: 'Space Mono', monospace; font-size: 9px; padding: 3px 8px; border-radius: 2px; background: rgba(255,255,255,0.04); color: var(--med); float: right; letter-spacing: 1px; }
-        .comment-section { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; }
-        .comment-bubble { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 10px 12px; border-radius: 3px; margin-top: 8px; font-size: 11px; border-left: 2px solid var(--accent); line-height: 1.5; }
-        .comment-date { display: block; font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); margin-top: 4px; }
-        .item-actions { margin-top: 14px; display: flex; gap: 8px; align-items: center; }
-        .btn-del { color: var(--high); background: none; border: none; margin-left: auto; font-size: 11px; opacity: 0.5; }
-        .btn-del:hover { opacity: 1; color: var(--high); }
-
-        /* ── FORM ROWS ── */
-        .row2 { display: flex; gap: 10px; margin-bottom: 0; }
-        .row2 input { margin-bottom: 0; }
-        .form-gap { margin-bottom: 10px; }
+        .item-meta { font-size: 11px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+        .item-date { font-size: 11px; color: var(--text2); margin-bottom: 6px; display: block; }
+        .item-title { font-size: 15px; font-weight: 700; margin: 4px 0 3px; display: block; color: var(--text); }
+        .item-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+        .badge-timer { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--med-light); color: var(--med); float: right; font-weight: 600; border: 1px solid #fde68a; }
+        .comment-section { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
+        .comment-bubble { background: var(--surface2); border: 1px solid var(--border); padding: 9px 12px; border-radius: 8px; margin-top: 8px; font-size: 12px; border-left: 3px solid var(--accent); line-height: 1.5; }
+        .comment-date { display: block; font-size: 10px; color: var(--text2); margin-top: 4px; font-weight: 500; }
+        .item-actions { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
 
         /* ── USER PORTAL ── */
-        #userPortal { max-width: 600px; margin: 0 auto; display: none; padding: 30px 15px 80px; }
-        .page-header { border-bottom: 1px solid var(--border); padding-bottom: 18px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-        .page-title { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
-        .portal-card { background: var(--panel); border: 1px solid var(--border2); border-radius: 4px; padding: 28px; margin-bottom: 14px; cursor: pointer; transition: 0.2s; text-align: center; position: relative; overflow: hidden; }
-        .portal-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(59,130,246,0.05), transparent); opacity: 0; transition: 0.2s; }
-        .portal-card:hover { border-color: var(--accent); }
-        .portal-card:hover::before { opacity: 1; }
-        .portal-card h3 { font-size: 16px; font-weight: 800; color: var(--accent2); margin-bottom: 6px; }
-        .portal-card p { font-size: 12px; color: var(--muted); }
-        .back-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-weight: 800; margin-bottom: 20px; padding: 0; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; }
-        .back-btn:hover { color: var(--accent2); border: none; }
-        .form-title { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; margin-bottom: 20px; letter-spacing: 1px; }
+        #userPortal { max-width: 560px; margin: 0 auto; display: none; padding: 24px 16px 90px; }
+        .page-header { padding-bottom: 16px; margin-bottom: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+        .portal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 12px; cursor: pointer; transition: 0.15s; text-align: center; box-shadow: var(--shadow); }
+        .portal-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+        .portal-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+        .portal-card p { font-size: 12px; color: var(--text2); }
+        .portal-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+        .back-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-weight: 600; margin-bottom: 18px; padding: 0; font-size: 13px; }
+        .back-btn:hover { color: #1d4ed8; background: none; border: none; }
+        .form-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
 
         /* ── ADMIN DASHBOARD ── */
-        #adminDashboard { display: none; max-width: 1400px; margin: 0 auto; width: 100%; padding: 20px 20px 120px; }
-        .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 0 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 30px; }
-        .top-nav-left { display: flex; flex-direction: column; gap: 5px; }
-        .top-nav-title { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; letter-spacing: 1px; }
+        #adminDashboard { display: none; max-width: 1400px; margin: 0 auto; width: 100%; padding: 20px 20px 100px; }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 0 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 26px; }
+        .top-nav-title { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
         .top-nav-actions { display: flex; gap: 10px; align-items: center; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        .col-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 4px; color: var(--accent); text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
-        .col-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-        .card { background: var(--panel); border: 1px solid var(--border); border-radius: 4px; padding: 20px; margin-bottom: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+        .col-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
 
         /* ── MOBILE NAV ── */
-        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--panel); border-top: 1px solid var(--border2); grid-template-columns: 1fr 1fr; z-index: 3000; padding: 8px; gap: 8px; }
-        .nav-btn { background: transparent; border: none; padding: 12px; color: var(--muted); font-size: 9px; text-transform: uppercase; font-weight: 700; font-family: 'Space Mono', monospace; letter-spacing: 2px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .nav-btn.active { color: var(--accent); }
-
-        /* ── LOADING ── */
-        .loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; }
-        .loading-text { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 4px; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); grid-template-columns: 1fr 1fr; z-index: 3000; padding: 6px 10px; gap: 8px; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); }
+        .nav-btn { background: transparent; border: none; padding: 10px; color: var(--text2); font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 3px; border-radius: 8px; }
+        .nav-btn.active { color: var(--accent); background: var(--accent-light); }
 
         @media (max-width: 900px) {
             .grid { grid-template-columns: 1fr; }
             .col-requests { display: none; }
             .mobile-nav { display: grid; }
-            #adminDashboard { padding: 15px 15px 120px; }
+            #adminDashboard { padding: 16px 14px 100px; }
         }
     </style>
 </head>
 <body>
 
-<!-- Loading -->
 <div class="loading-overlay" id="loadingOverlay">
-    <div class="loading-text">INITIALIZING...</div>
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading...</div>
 </div>
 
-<!-- Login -->
 <div id="loginOverlay" style="display:none;">
     <div class="login-wrap">
-        <div class="login-logo">ERC CLOUD TICKETING</div>
+        <div class="login-header">
+            <div class="login-logo">ERC <span>Ticketing</span></div>
+            <div class="login-tagline">IT Support &amp; Scheduling System</div>
+        </div>
         <div class="login-box">
-            <div class="login-title">SECURE ACCESS</div>
-            <div class="login-sub">Enter your credentials to access IT Support and Scheduling.</div>
-            <label class="field-label">Email</label>
-            <input class="login-input" type="email" id="emailInput" placeholder="user@erc.local" autocomplete="username">
-            <label class="field-label" style="margin-top:16px;">Password</label>
-            <input class="login-input" type="password" id="passInput" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleAuth()">
-            <button class="login-btn" onclick="handleAuth()" id="loginBtn">LOGIN</button>
+            <div class="field-wrap">
+                <label class="field-label">Email</label>
+                <input class="login-input" type="email" id="emailInput" placeholder="your@email.com" autocomplete="username">
+            </div>
+            <div class="field-wrap">
+                <label class="field-label">Password</label>
+                <input class="login-input" type="password" id="passInput" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleAuth()">
+            </div>
+            <button class="login-btn" onclick="handleAuth()" id="loginBtn">Sign In</button>
             <div class="login-error" id="loginError"></div>
         </div>
-        <div class="login-footer">DEVELOPED BY MAREK &nbsp;·&nbsp; <span style="color:var(--med)">v21.0.0</span></div>
+        <div class="login-footer">Developed by Marek · v21.0.0</div>
     </div>
 </div>
 
-<!-- Mobile Nav (Admin) -->
 <div class="mobile-nav" id="adminMobNav" style="display:none;">
     <button class="nav-btn active" id="btnTickets" onclick="switchTab('tickets')">🛠️<br>Tickets</button>
     <button class="nav-btn" id="btnSchedule" onclick="switchTab('requests')">📅<br>Schedule</button>
 </div>
 
-<!-- User Portal -->
 <div id="userPortal">
     <div class="page-header">
         <div>
-            <div class="page-title">STAFF SUPPORT</div>
-            <span class="sync-ind uSyncStat" style="color:var(--med)">● CONNECTING</span>
+            <div class="page-title">Staff Support</div>
+            <span class="sync-ind uSyncStat" style="color:var(--med)">● Connecting...</span>
         </div>
-        <button class="btn-logoff" onclick="handleLogout()">LOG OFF</button>
+        <button class="btn-logoff" onclick="handleLogout()">Log Off</button>
     </div>
     <div id="uHome">
-        <div style="display:grid; gap:14px; margin-top:10px;">
+        <div style="display:grid; gap:12px; margin-top:8px;">
             <div class="portal-card" onclick="openUForm('tickets')">
-                <h3>🛠️ IT Ticket</h3>
+                <span class="portal-icon">🛠️</span>
+                <h3>IT Ticket</h3>
                 <p>Broken PC, Wi-Fi or software issues.</p>
             </div>
             <div class="portal-card" onclick="openUForm('requests')">
-                <h3>📅 Schedule Request</h3>
+                <span class="portal-icon">📅</span>
+                <h3>Schedule Request</h3>
                 <p>Hall set up, exam bookings etc.</p>
             </div>
         </div>
     </div>
     <div id="uForm" style="display:none;">
-        <button class="back-btn" onclick="goBackToOptions()">← BACK</button>
-        <div class="form-title" id="formTitle">NEW ENTRY</div>
-        <div class="row2 form-gap"><input id="un" placeholder="Your Name"><input id="ul" placeholder="Location"></div>
-        <input id="ut" placeholder="Title" class="form-gap" style="margin-top:10px;">
-        <textarea id="ud" placeholder="Details..." rows="4" class="form-gap" style="margin-top:10px;"></textarea>
-        <div id="uTimeRow" style="display:none; gap:10px; margin-bottom:10px;"><input type="date" id="udate"><input type="time" id="utime"></div>
-        <button class="btn-primary" onclick="submitEntry('user')">SUBMIT</button>
+        <button class="back-btn" onclick="goBackToOptions()">← Back</button>
+        <div class="form-title" id="formTitle">New Entry</div>
+        <div class="row2"><input id="un" placeholder="Your Name"><input id="ul" placeholder="Location"></div>
+        <input id="ut" placeholder="Title" style="margin-top:10px;">
+        <textarea id="ud" placeholder="Details..." rows="4" style="margin-top:10px;"></textarea>
+        <div id="uTimeRow" style="display:none; gap:10px; margin-top:10px;"><input type="date" id="udate"><input type="time" id="utime"></div>
+        <button class="btn-primary" onclick="submitEntry('user')">Submit</button>
     </div>
-    <div class="footer">DEVELOPED BY MAREK <span style="color:var(--med)">v21.0.0</span></div>
+    <div class="footer">Developed by Marek · v21.0.0</div>
 </div>
 
-<!-- Admin Dashboard -->
 <div id="adminDashboard">
     <div class="top-nav">
-        <div class="top-nav-left">
-            <div class="top-nav-title">ERC ADMIN</div>
-            <span class="sync-ind aSyncStat" style="color:var(--med)">● CONNECTING</span>
+        <div>
+            <div class="top-nav-title">ERC Admin</div>
+            <span class="sync-ind aSyncStat" style="color:var(--med)">● Connecting...</span>
         </div>
         <div class="top-nav-actions">
-            <button class="btn-icon" onclick="sync()">🔄</button>
-            <button class="btn-logoff" onclick="handleLogout()">LOG OFF</button>
+            <button class="btn-icon" onclick="sync()">🔄 Refresh</button>
+            <button class="btn-logoff" onclick="handleLogout()">Log Off</button>
         </div>
     </div>
     <div class="grid">
         <div class="col col-tickets">
-            <div class="col-label">IT Service Desk</div>
+            <div class="col-label">🛠️ IT Service Desk</div>
             <div class="card">
-                <div class="row2 form-gap"><input id="an" placeholder="Name" value="ADMIN"><input id="al" placeholder="Location" value="HQ"></div>
-                <input id="at" placeholder="Issue Title" class="form-gap" style="margin-top:10px;">
-                <textarea id="ad" placeholder="Notes..." rows="2" class="form-gap" style="margin-top:10px;"></textarea>
+                <div class="row2"><input id="an" placeholder="Name" value="ADMIN"><input id="al" placeholder="Location" value="HQ"></div>
+                <input id="at" placeholder="Issue Title" style="margin-top:10px;">
+                <textarea id="ad" placeholder="Notes..." rows="2" style="margin-top:10px;"></textarea>
                 <select id="ap" onchange="this.className='sel-'+this.value" class="sel-Medium" style="margin-top:10px;">
                     <option value="Low">Low Priority</option>
                     <option value="Medium" selected>Medium Priority</option>
                     <option value="High">High Priority</option>
                 </select>
-                <button class="btn-primary" onclick="submitEntry('admin_t')">LOG TICKET</button>
+                <button class="btn-primary" onclick="submitEntry('admin_t')">Log Ticket</button>
             </div>
             <div id="list_t"></div>
-            <div class="group-header">Resolved Archive</div>
-            <div id="list_ct" style="opacity:0.4;"></div>
+            <div class="group-header">Resolved</div>
+            <div id="list_ct" style="opacity:0.55;"></div>
         </div>
         <div class="col col-requests">
-            <div class="col-label">Command Schedule</div>
+            <div class="col-label">📅 Schedule</div>
             <div class="card">
-                <div class="row2 form-gap"><input id="rn" placeholder="Name" value="ADMIN"><input id="rl" placeholder="Location" value="HQ"></div>
-                <input id="rt" placeholder="Event Name" class="form-gap" style="margin-top:10px;">
-                <textarea id="rd" placeholder="Details..." rows="2" class="form-gap" style="margin-top:10px;"></textarea>
+                <div class="row2"><input id="rn" placeholder="Name" value="ADMIN"><input id="rl" placeholder="Location" value="HQ"></div>
+                <input id="rt" placeholder="Event Name" style="margin-top:10px;">
+                <textarea id="rd" placeholder="Details..." rows="2" style="margin-top:10px;"></textarea>
                 <div style="display:flex; gap:10px; margin-top:10px;"><input type="date" id="rdt"><input type="time" id="rtm"></div>
-                <button class="btn-primary" onclick="submitEntry('admin_r')">SAVE EVENT</button>
+                <button class="btn-primary" onclick="submitEntry('admin_r')">Save Event</button>
             </div>
             <div id="list_r"></div>
-            <div class="group-header">Completed Tasks</div>
-            <div id="list_cr" style="opacity:0.4;"></div>
+            <div class="group-header">Completed</div>
+            <div id="list_cr" style="opacity:0.55;"></div>
         </div>
     </div>
-    <div class="footer">DEVELOPED BY MAREK <span style="color:var(--med)">v21.0.0</span></div>
+    <div class="footer">Developed by Marek · v21.0.0</div>
 </div>
 
 <script>
-    // ── SUPABASE INIT ──
     const SUPABASE_URL = 'https://brxmrrningxenbbyduqn.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_bBvUJz-BLVAVsPIK18Ch3g_O7_yln4d';
+    const ADMIN_EMAIL  = 'admin@erc.local';
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    let isAdmin = false, currentUser = null;
 
-    // ── ADMIN EMAIL — change this to your admin account's email ──
-    const ADMIN_EMAIL = 'admin@erc.local';
-
-    let isAdmin = false;
-    let currentUser = null;
-
-    // ── AUTH ──
     async function handleAuth() {
         const email = document.getElementById('emailInput').value.trim();
-        const pass = document.getElementById('passInput').value;
-        const btn = document.getElementById('loginBtn');
-        const err = document.getElementById('loginError');
+        const pass  = document.getElementById('passInput').value;
+        const btn   = document.getElementById('loginBtn');
+        const err   = document.getElementById('loginError');
         err.style.display = 'none';
-        btn.disabled = true;
-        btn.innerText = 'AUTHENTICATING...';
+        btn.disabled = true; btn.innerText = 'Signing in...';
         const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
         if (error) {
-            err.innerText = '⚠ ' + (error.message === 'Invalid login credentials' ? 'Invalid email or password.' : error.message);
+            err.innerText = error.message === 'Invalid login credentials' ? 'Invalid email or password.' : error.message;
             err.style.display = 'block';
-            btn.disabled = false;
-            btn.innerText = 'LOGIN';
+            btn.disabled = false; btn.innerText = 'Sign In';
         } else {
             currentUser = data.user;
             isAdmin = currentUser.email === ADMIN_EMAIL;
@@ -277,10 +272,7 @@
         }
     }
 
-    async function handleLogout() {
-        await sb.auth.signOut();
-        location.reload();
-    }
+    async function handleLogout() { await sb.auth.signOut(); location.reload(); }
 
     function showApp() {
         document.getElementById('loginOverlay').style.display = 'none';
@@ -293,7 +285,6 @@
         sync();
     }
 
-    // ── INIT: check session ──
     async function init() {
         const { data: { session } } = await sb.auth.getSession();
         document.getElementById('loadingOverlay').style.display = 'none';
@@ -307,9 +298,12 @@
     }
     init();
 
-    // ── SYNC / FETCH ──
+    function setSyncStatus(txt, color) {
+        document.querySelectorAll('.sync-ind').forEach(el => { el.innerText = txt; el.style.color = color; });
+    }
+
     async function sync() {
-        setSyncStatus('● SYNCING...', '#fbbf24');
+        setSyncStatus('● Syncing...', '#d97706');
         try {
             const [t, r, ct, cr] = await Promise.all([
                 sb.from('tickets').select('*').eq('completed', false).order('created_at', { ascending: false }),
@@ -317,19 +311,12 @@
                 sb.from('tickets').select('*').eq('completed', true).order('created_at', { ascending: false }),
                 sb.from('requests').select('*').eq('completed', true).order('created_at', { ascending: false })
             ]);
-            if (t.error || r.error) throw new Error('Fetch error');
-            render(t.data || [], r.data || [], ct.data || [], cr.data || []);
-            setSyncStatus('● CLOUD ONLINE', '#34d399');
-        } catch(e) {
-            setSyncStatus('● ERROR', '#f87171');
-        }
+            if (t.error || r.error) throw new Error();
+            render(t.data||[], r.data||[], ct.data||[], cr.data||[]);
+            setSyncStatus('● Online', '#16a34a');
+        } catch(e) { setSyncStatus('● Error', '#dc2626'); }
     }
 
-    function setSyncStatus(txt, color) {
-        document.querySelectorAll('.sync-ind').forEach(el => { el.innerText = txt; el.style.color = color; });
-    }
-
-    // ── SUBMIT ──
     async function submitEntry(mode) {
         let table, item;
         if (mode === 'user') {
@@ -355,22 +342,24 @@
         const { error } = await sb.from(table).insert(item);
         if (error) return alert('Error saving: ' + error.message);
         if (mode === 'user') { alert('Submitted successfully!'); location.reload(); return; }
-        // clear admin form fields
         if (mode === 'admin_t') { ['at','ad'].forEach(id => document.getElementById(id).value = ''); }
         else { ['rt','rd','rdt','rtm'].forEach(id => document.getElementById(id).value = ''); }
         sync();
     }
 
-    // ── ACTIONS ──
     async function changePri(id, newPri) {
         await sb.from('tickets').update({ priority: newPri }).eq('id', id);
         sync();
     }
 
-    async function addComment(table, id, currentComments) {
-        const msg = prompt('Add comment:');
-        if (!msg) return;
-        const updated = [...(currentComments || []), { txt: msg, date: new Date().toLocaleString() }];
+    // FIXED: fetches current comments fresh from DB before appending
+    async function addComment(table, id) {
+        const msg = prompt('Add a comment:');
+        if (!msg || !msg.trim()) return;
+        const { data, error } = await sb.from(table).select('comments').eq('id', id).single();
+        if (error) return alert('Could not load comments.');
+        const existing = Array.isArray(data.comments) ? data.comments : [];
+        const updated = [...existing, { txt: msg.trim(), date: new Date().toLocaleString('en-GB') }];
         await sb.from(table).update({ comments: updated }).eq('id', id);
         sync();
     }
@@ -386,55 +375,50 @@
         sync();
     }
 
-    // ── HELPERS ──
-    function formatAge(ts) { const ms = Date.now() - new Date(ts).getTime(); const d = Math.floor(ms/86400000); const h = Math.floor((ms%86400000)/3600000); return `🕒 ${d}d ${h}h`; }
-    function formatCountdown(date, time) { if (!date) return ''; const ms = new Date(`${date}T${time||'00:00'}`).getTime() - Date.now(); const d = Math.floor(Math.abs(ms)/86400000); const h = Math.floor((Math.abs(ms)%86400000)/3600000); return ms > 0 ? `In ${d}d ${h}h` : `Past`; }
+    function formatAge(ts) { const ms = Date.now() - new Date(ts).getTime(); const d = Math.floor(ms/86400000); const h = Math.floor((ms%86400000)/3600000); return `${d}d ${h}h ago`; }
+    function formatCountdown(date, time) { if (!date) return ''; const ms = new Date(`${date}T${time||'00:00'}`).getTime() - Date.now(); const d = Math.floor(Math.abs(ms)/86400000); const h = Math.floor((Math.abs(ms)%86400000)/3600000); return ms > 0 ? `In ${d}d ${h}h` : 'Past'; }
     function prettyDate(d) { if (!d) return ''; const p = d.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d; }
 
-    // ── RENDER ──
     function renderItem(i, table) {
         const isRequest = table === 'requests';
         const timer = isRequest ? formatCountdown(i.event_date, i.event_time) : formatAge(i.created_at);
-        const dateStr = isRequest ? `Event: ${prettyDate(i.event_date)} @ ${i.event_time || ''}` : `Logged: ${new Date(i.created_at).toLocaleDateString('en-GB')}`;
+        const dateStr = isRequest ? `📅 ${prettyDate(i.event_date)}${i.event_time ? ' @ ' + i.event_time : ''}` : `Logged: ${new Date(i.created_at).toLocaleDateString('en-GB')}`;
         const priClass = !isRequest ? `pri-${i.priority}` : '';
-        const priSelect = (!isRequest && !i.completed) ? `<select onchange="changePri(${i.id}, this.value)" style="width:auto;margin:6px 0;padding:4px 10px;font-size:10px;height:auto;" class="sel-${i.priority}"><option value="Low" ${i.priority==='Low'?'selected':''}>Low</option><option value="Medium" ${i.priority==='Medium'?'selected':''}>Medium</option><option value="High" ${i.priority==='High'?'selected':''}>High</option></select>` : '';
-        const comments = (i.comments || []).map(c => `<div class="comment-bubble">${c.txt}<span class="comment-date">${c.date}</span></div>`).join('');
+        const priSelect = (!isRequest && !i.completed) ? `<select onchange="changePri(${i.id}, this.value)" style="width:auto;margin:6px 0;padding:5px 10px;font-size:11px;height:auto;" class="sel-${i.priority}"><option value="Low" ${i.priority==='Low'?'selected':''}>Low</option><option value="Medium" ${i.priority==='Medium'?'selected':''}>Medium</option><option value="High" ${i.priority==='High'?'selected':''}>High</option></select>` : '';
+        const comments = (Array.isArray(i.comments) ? i.comments : []).map(c => `<div class="comment-bubble">${c.txt}<span class="comment-date">${c.date}</span></div>`).join('');
         return `<div class="item ${priClass}">
-            <span class="badge-timer">${timer}</span>
-            <div class="item-meta">👤 ${i.user_name || ''} &nbsp;|&nbsp; 📍 ${i.location || ''}</div>
+            ${timer ? `<span class="badge-timer">${timer}</span>` : ''}
+            <div class="item-meta">👤 ${i.user_name || ''} &nbsp;·&nbsp; 📍 ${i.location || ''}</div>
             <span class="item-date">${dateStr}</span>
             ${priSelect}
             <span class="item-title">${i.title}</span>
             <div class="item-desc">${i.description || ''}</div>
             ${comments ? `<div class="comment-section">${comments}</div>` : ''}
             <div class="item-actions">
-                <button class="btn-icon" onclick="addComment('${table}', ${i.id}, ${JSON.stringify(JSON.stringify(i.comments||[]))}.replace ? JSON.parse(${JSON.stringify(JSON.stringify(i.comments||[]))}) : [])">💬</button>
+                <button class="btn-icon" onclick="addComment('${table}', ${i.id})">💬 Comment</button>
                 <button class="btn-icon" onclick="toggleComplete('${table}', ${i.id}, ${i.completed})">${i.completed ? '🔄 Reopen' : '✅ Done'}</button>
-                <button class="btn-del" onclick="deleteItem('${table}', ${i.id})">DEL</button>
+                <button class="btn-del" onclick="deleteItem('${table}', ${i.id})">Delete</button>
             </div>
         </div>`;
     }
 
     function render(tickets, requests, comp_t, comp_r) {
         if (!isAdmin) return;
-        document.getElementById('list_t').innerHTML = tickets.map(i => renderItem(i, 'tickets')).join('') || '<div style="color:var(--muted);font-size:12px;padding:10px 0;">No open tickets.</div>';
+        document.getElementById('list_t').innerHTML = tickets.map(i => renderItem(i, 'tickets')).join('') || '<p style="color:var(--text2);font-size:13px;padding:8px 0;">No open tickets.</p>';
         document.getElementById('list_ct').innerHTML = comp_t.map(i => renderItem(i, 'tickets')).join('');
         const todayStr = new Date().toISOString().split('T')[0];
         const todayReqs = requests.filter(r => r.event_date === todayStr);
-        const upcoming = requests.filter(r => !r.event_date || r.event_date > todayStr);
-        const past = requests.filter(r => r.event_date && r.event_date < todayStr);
+        const upcoming  = requests.filter(r => !r.event_date || r.event_date > todayStr);
+        const past      = requests.filter(r => r.event_date && r.event_date < todayStr);
         document.getElementById('list_r').innerHTML =
-            `<div class="group-header">Today</div>` + (todayReqs.map(i => renderItem(i, 'requests')).join('') || '<div style="color:var(--muted);font-size:12px;padding:6px 0;">Nothing today.</div>') +
-            `<div class="group-header">Upcoming</div>` + (upcoming.map(i => renderItem(i, 'requests')).join('') || '<div style="color:var(--muted);font-size:12px;padding:6px 0;">No upcoming events.</div>') +
+            `<div class="group-header">Today</div>` + (todayReqs.map(i => renderItem(i, 'requests')).join('') || '<p style="color:var(--text2);font-size:13px;padding:4px 0;">Nothing today.</p>') +
+            `<div class="group-header">Upcoming</div>` + (upcoming.map(i => renderItem(i, 'requests')).join('') || '<p style="color:var(--text2);font-size:13px;padding:4px 0;">No upcoming events.</p>') +
             (past.length ? `<div class="group-header">Past</div>` + past.map(i => renderItem(i, 'requests')).join('') : '');
         document.getElementById('list_cr').innerHTML = comp_r.map(i => renderItem(i, 'requests')).join('');
     }
 
-    // ── USER PORTAL NAV ──
-    function openUForm(t) { document.getElementById('uHome').style.display='none'; document.getElementById('uForm').style.display='block'; document.getElementById('uTimeRow').style.display = t==='requests'?'flex':'none'; document.getElementById('formTitle').innerText = t==='tickets' ? 'NEW IT TICKET' : 'NEW SCHEDULE REQUEST'; window.curU = t; }
+    function openUForm(t) { document.getElementById('uHome').style.display='none'; document.getElementById('uForm').style.display='block'; document.getElementById('uTimeRow').style.display = t==='requests'?'flex':'none'; document.getElementById('formTitle').innerText = t==='tickets' ? 'New IT Ticket' : 'New Schedule Request'; window.curU = t; }
     function goBackToOptions() { document.getElementById('uForm').style.display='none'; document.getElementById('uHome').style.display='block'; }
-
-    // ── ADMIN MOBILE TAB ──
     function switchTab(tab) {
         document.querySelector('.col-tickets').style.display = tab === 'tickets' ? 'block' : 'none';
         document.querySelector('.col-requests').style.display = tab === 'requests' ? 'block' : 'none';
