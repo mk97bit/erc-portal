@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* ── LIGHT THEME ── */
         :root {
             --bg: #f0f2f5;
             --surface: #ffffff;
@@ -26,8 +27,34 @@
             --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
             --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
         }
+
+        /* ── DARK THEME (colours from your palette) ── */
+        [data-theme="dark"] {
+            --bg: #1a2a3a;
+            --surface: #1e3448;
+            --surface2: #243d54;
+            --text: #e8edf5;
+            --text2: #7a9ab5;
+            --accent: #5b9abf;
+            --accent-light: rgba(91,154,191,0.15);
+            --high: #e07070;
+            --high-light: rgba(224,112,112,0.12);
+            --med: #e0a040;
+            --med-light: rgba(224,160,64,0.12);
+            --low: #4db87a;
+            --low-light: rgba(77,184,122,0.12);
+            --border: #2d4a62;
+            --border2: #3a5a74;
+            --shadow: 0 1px 4px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; transition: background 0.25s, color 0.25s; }
+
+        /* ── THEME TOGGLE ── */
+        .theme-toggle { background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; padding: 5px 10px; font-size: 16px; cursor: pointer; line-height: 1; transition: 0.2s; }
+        .theme-toggle:hover { border-color: var(--accent); }
 
         /* ── LOADING ── */
         .loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
@@ -46,31 +73,42 @@
         .field-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: block; }
         .field-wrap { margin-bottom: 16px; }
         .login-input { width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 11px 14px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
-        .login-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .login-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(91,154,191,0.15); }
         .login-btn { width: 100%; margin-top: 8px; background: var(--accent); border: none; border-radius: 8px; padding: 12px; color: white; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.15s; }
-        .login-btn:hover { background: #1d4ed8; }
+        .login-btn:hover { opacity: 0.9; }
         .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .login-error { background: var(--high-light); border: 1px solid #fecaca; border-radius: 8px; padding: 11px 14px; font-size: 13px; color: var(--high); margin-top: 14px; display: none; }
+        .login-error { background: var(--high-light); border: 1px solid var(--high); border-radius: 8px; padding: 11px 14px; font-size: 13px; color: var(--high); margin-top: 14px; display: none; }
         .login-footer { text-align: center; margin-top: 20px; font-size: 12px; color: var(--text2); }
+        .login-theme { position: absolute; top: 20px; right: 20px; }
 
         /* ── SHARED INPUTS ── */
         input, textarea, select { width: 100%; background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 13px; color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; outline: none; resize: none; transition: border-color 0.15s, box-shadow 0.15s; }
-        input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
-        select option { background: white; }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(91,154,191,0.12); }
+        select option { background: var(--surface); color: var(--text); }
+        /* Fix date/time inputs in dark mode */
+        input[type="date"], input[type="time"] { color-scheme: dark; }
+        [data-theme="light"] input[type="date"], [data-theme="light"] input[type="time"] { color-scheme: light; }
+
         .sel-High { border-color: var(--high) !important; color: var(--high) !important; background: var(--high-light) !important; }
         .sel-Medium { border-color: var(--med) !important; color: var(--med) !important; background: var(--med-light) !important; }
         .sel-Low { border-color: var(--low) !important; color: var(--low) !important; background: var(--low-light) !important; }
+
+        /* ── LABELED FIELD (for date/time on mobile) ── */
+        .field-group { display: flex; flex-direction: column; gap: 4px; }
+        .field-group .input-label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+        .datetime-row { display: flex; gap: 10px; margin-top: 10px; }
+        .datetime-row .field-group { flex: 1; }
 
         /* ── BUTTONS ── */
         button { border: 1px solid var(--border2); padding: 8px 14px; border-radius: 8px; cursor: pointer; background: var(--surface); color: var(--text); font-weight: 600; font-size: 13px; transition: 0.15s; font-family: 'Inter', sans-serif; }
         button:hover { background: var(--surface2); }
         .btn-primary { background: var(--accent); border-color: var(--accent); width: 100%; height: 44px; font-size: 14px; margin-top: 10px; color: white; font-weight: 600; }
-        .btn-primary:hover { background: #1d4ed8; border-color: #1d4ed8; color: white; }
-        .btn-logoff { background: white; color: var(--high); border-color: #fca5a5; font-size: 12px; }
-        .btn-logoff:hover { background: var(--high-light); border-color: var(--high); color: var(--high); }
+        .btn-primary:hover { opacity: 0.9; color: white; }
+        .btn-logoff { background: transparent; color: var(--high); border-color: var(--high); font-size: 12px; opacity: 0.8; }
+        .btn-logoff:hover { opacity: 1; background: var(--high-light); }
         .btn-icon { background: var(--surface2); border: 1px solid var(--border); padding: 6px 12px; font-size: 12px; border-radius: 6px; font-weight: 500; }
         .btn-icon:hover { background: var(--border); }
-        .btn-del { color: var(--high); background: none; border: none; font-size: 12px; font-weight: 500; opacity: 0.6; margin-left: auto; padding: 6px 8px; }
+        .btn-del { color: var(--high); background: none; border: none; font-size: 12px; font-weight: 500; opacity: 0.5; margin-left: auto; padding: 6px 8px; }
         .btn-del:hover { opacity: 1; background: var(--high-light); border-radius: 6px; }
 
         /* ── MISC ── */
@@ -91,35 +129,37 @@
         .item-date { font-size: 11px; color: var(--text2); margin-bottom: 6px; display: block; }
         .item-title { font-size: 15px; font-weight: 700; margin: 4px 0 3px; display: block; color: var(--text); }
         .item-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
-        .badge-timer { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--med-light); color: var(--med); float: right; font-weight: 600; border: 1px solid #fde68a; }
+        .badge-timer { font-size: 11px; padding: 2px 8px; border-radius: 20px; background: var(--med-light); color: var(--med); float: right; font-weight: 600; border: 1px solid rgba(224,160,64,0.3); }
         .comment-section { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
         .comment-bubble { background: var(--surface2); border: 1px solid var(--border); padding: 9px 12px; border-radius: 8px; margin-top: 8px; font-size: 12px; border-left: 3px solid var(--accent); line-height: 1.5; }
         .comment-date { display: block; font-size: 10px; color: var(--text2); margin-top: 4px; font-weight: 500; }
-        .item-actions { margin-top: 12px; display: flex; gap: 8px; align-items: center; }
+        .item-actions { margin-top: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
         /* ── USER PORTAL ── */
         #userPortal { max-width: 560px; margin: 0 auto; display: none; padding: 24px 16px 90px; }
-        .page-header { padding-bottom: 16px; margin-bottom: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .page-header { padding-bottom: 16px; margin-bottom: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .page-header-left { display: flex; flex-direction: column; gap: 3px; }
         .page-title { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+        .page-header-right { display: flex; gap: 8px; align-items: center; }
         .portal-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 12px; cursor: pointer; transition: 0.15s; text-align: center; box-shadow: var(--shadow); }
         .portal-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-1px); }
         .portal-card h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
         .portal-card p { font-size: 12px; color: var(--text2); }
         .portal-icon { font-size: 28px; margin-bottom: 10px; display: block; }
         .back-btn { background: none; border: none; color: var(--accent); cursor: pointer; font-weight: 600; margin-bottom: 18px; padding: 0; font-size: 13px; }
-        .back-btn:hover { color: #1d4ed8; background: none; border: none; }
+        .back-btn:hover { opacity: 0.75; background: none; border: none; }
         .form-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
 
         /* ── ADMIN DASHBOARD ── */
         #adminDashboard { display: none; max-width: 1400px; margin: 0 auto; width: 100%; padding: 20px 20px 100px; }
         .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 0 0 18px; border-bottom: 1px solid var(--border); margin-bottom: 26px; }
         .top-nav-title { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
-        .top-nav-actions { display: flex; gap: 10px; align-items: center; }
+        .top-nav-actions { display: flex; gap: 8px; align-items: center; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
         .col-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
 
         /* ── MOBILE NAV ── */
-        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border); grid-template-columns: 1fr 1fr; z-index: 3000; padding: 6px 10px; gap: 8px; box-shadow: 0 -2px 8px rgba(0,0,0,0.08); }
+        .mobile-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); grid-template-columns: 1fr 1fr; z-index: 3000; padding: 6px 10px; gap: 8px; box-shadow: 0 -2px 8px rgba(0,0,0,0.12); }
         .nav-btn { background: transparent; border: none; padding: 10px; color: var(--text2); font-size: 11px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 3px; border-radius: 8px; }
         .nav-btn.active { color: var(--accent); background: var(--accent-light); }
 
@@ -133,12 +173,15 @@
 </head>
 <body>
 
+<!-- Loading -->
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-spinner"></div>
     <div class="loading-text">Loading...</div>
 </div>
 
+<!-- Login -->
 <div id="loginOverlay" style="display:none;">
+    <button class="theme-toggle login-theme" onclick="toggleTheme()" id="loginThemeBtn" title="Toggle theme">🌙</button>
     <div class="login-wrap">
         <div class="login-header">
             <div class="login-logo">ERC <span>Ticketing</span></div>
@@ -160,18 +203,23 @@
     </div>
 </div>
 
+<!-- Mobile Nav (Admin) -->
 <div class="mobile-nav" id="adminMobNav" style="display:none;">
     <button class="nav-btn active" id="btnTickets" onclick="switchTab('tickets')">🛠️<br>Tickets</button>
     <button class="nav-btn" id="btnSchedule" onclick="switchTab('requests')">📅<br>Schedule</button>
 </div>
 
+<!-- User Portal -->
 <div id="userPortal">
     <div class="page-header">
-        <div>
+        <div class="page-header-left">
             <div class="page-title">Staff Support</div>
             <span class="sync-ind uSyncStat" style="color:var(--med)">● Connecting...</span>
         </div>
-        <button class="btn-logoff" onclick="handleLogout()">Log Off</button>
+        <div class="page-header-right">
+            <button class="theme-toggle" onclick="toggleTheme()" id="userThemeBtn" title="Toggle theme">🌙</button>
+            <button class="btn-logoff" onclick="handleLogout()">Log Off</button>
+        </div>
     </div>
     <div id="uHome">
         <div style="display:grid; gap:12px; margin-top:8px;">
@@ -193,12 +241,17 @@
         <div class="row2"><input id="un" placeholder="Your Name"><input id="ul" placeholder="Location"></div>
         <input id="ut" placeholder="Title" style="margin-top:10px;">
         <textarea id="ud" placeholder="Details..." rows="4" style="margin-top:10px;"></textarea>
-        <div id="uTimeRow" style="display:none; gap:10px; margin-top:10px;"><input type="date" id="udate"><input type="time" id="utime"></div>
+        <!-- Labeled date/time fields so mobile users know what they are -->
+        <div id="uTimeRow" style="display:none; gap:10px; margin-top:10px;">
+            <input type="date" id="udate" placeholder="📅 Date">
+            <input type="time" id="utime" placeholder="🕐 Time">
+        </div>
         <button class="btn-primary" onclick="submitEntry('user')">Submit</button>
     </div>
     <div class="footer">Developed by Marek · v21.0.0</div>
 </div>
 
+<!-- Admin Dashboard -->
 <div id="adminDashboard">
     <div class="top-nav">
         <div>
@@ -206,6 +259,7 @@
             <span class="sync-ind aSyncStat" style="color:var(--med)">● Connecting...</span>
         </div>
         <div class="top-nav-actions">
+            <button class="theme-toggle" onclick="toggleTheme()" id="adminThemeBtn" title="Toggle theme">🌙</button>
             <button class="btn-icon" onclick="sync()">🔄 Refresh</button>
             <button class="btn-logoff" onclick="handleLogout()">Log Off</button>
         </div>
@@ -234,7 +288,11 @@
                 <div class="row2"><input id="rn" placeholder="Name" value="ADMIN"><input id="rl" placeholder="Location" value="HQ"></div>
                 <input id="rt" placeholder="Event Name" style="margin-top:10px;">
                 <textarea id="rd" placeholder="Details..." rows="2" style="margin-top:10px;"></textarea>
-                <div style="display:flex; gap:10px; margin-top:10px;"><input type="date" id="rdt"><input type="time" id="rtm"></div>
+                <!-- Labeled date/time for admin too -->
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <input type="date" id="rdt" placeholder="📅 Date">
+                    <input type="time" id="rtm" placeholder="🕐 Time">
+                </div>
                 <button class="btn-primary" onclick="submitEntry('admin_r')">Save Event</button>
             </div>
             <div id="list_r"></div>
@@ -253,6 +311,27 @@
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
     let isAdmin = false, currentUser = null;
 
+    // ── THEME ──
+    function toggleTheme() {
+        const html = document.documentElement;
+        const isDark = html.getAttribute('data-theme') === 'dark';
+        const newTheme = isDark ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('erc-theme', newTheme);
+        const icon = isDark ? '🌙' : '☀️';
+        document.querySelectorAll('.theme-toggle').forEach(b => b.textContent = icon);
+    }
+
+    // Load saved theme on startup
+    (function() {
+        const saved = localStorage.getItem('erc-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', saved);
+        const icon = saved === 'dark' ? '🌙' : '☀️';
+        // will be set after DOM ready, handled below
+        window._savedThemeIcon = icon;
+    })();
+
+    // ── AUTH ──
     async function handleAuth() {
         const email = document.getElementById('emailInput').value.trim();
         const pass  = document.getElementById('passInput').value;
@@ -288,6 +367,8 @@
     async function init() {
         const { data: { session } } = await sb.auth.getSession();
         document.getElementById('loadingOverlay').style.display = 'none';
+        // Apply saved theme icon to all toggle buttons
+        document.querySelectorAll('.theme-toggle').forEach(b => b.textContent = window._savedThemeIcon || '🌙');
         if (session) {
             currentUser = session.user;
             isAdmin = currentUser.email === ADMIN_EMAIL;
@@ -298,13 +379,27 @@
     }
     init();
 
+    // ── SYNC ──
     function setSyncStatus(txt, color) {
         document.querySelectorAll('.sync-ind').forEach(el => { el.innerText = txt; el.style.color = color; });
     }
 
+    async function autoCompletePastRequests() {
+        const todayStr = new Date().toISOString().split('T')[0];
+        const { data, error } = await sb.from('requests')
+            .select('id')
+            .eq('completed', false)
+            .not('event_date', 'is', null)
+            .lt('event_date', todayStr);
+        if (error || !data || data.length === 0) return;
+        const ids = data.map(r => r.id);
+        await sb.from('requests').update({ completed: true }).in('id', ids);
+    }
+
     async function sync() {
-        setSyncStatus('● Syncing...', '#d97706');
+        setSyncStatus('● Syncing...', '#e0a040');
         try {
+            await autoCompletePastRequests();
             const [t, r, ct, cr] = await Promise.all([
                 sb.from('tickets').select('*').eq('completed', false).order('created_at', { ascending: false }),
                 sb.from('requests').select('*').eq('completed', false).order('event_date', { ascending: true }),
@@ -313,10 +408,11 @@
             ]);
             if (t.error || r.error) throw new Error();
             render(t.data||[], r.data||[], ct.data||[], cr.data||[]);
-            setSyncStatus('● Online', '#16a34a');
-        } catch(e) { setSyncStatus('● Error', '#dc2626'); }
+            setSyncStatus('● Online', '#4db87a');
+        } catch(e) { setSyncStatus('● Error', '#e07070'); }
     }
 
+    // ── SUBMIT ──
     async function submitEntry(mode) {
         let table, item;
         if (mode === 'user') {
@@ -324,7 +420,8 @@
             const title = document.getElementById('ut').value.trim();
             if (!name || !title) return alert('Please fill in your name and title.');
             table = window.curU;
-            item = { user_name: name, location: document.getElementById('ul').value, title, description: document.getElementById('ud').value, comments: [], completed: false }; if (table === 'tickets') { item.priority = 'Medium'; }
+            item = { user_name: name, location: document.getElementById('ul').value, title, description: document.getElementById('ud').value, comments: [], completed: false };
+            if (table === 'tickets') { item.priority = 'Medium'; }
             if (table === 'requests') { item.event_date = document.getElementById('udate').value || null; item.event_time = document.getElementById('utime').value || null; }
         } else if (mode === 'admin_t') {
             const name = document.getElementById('an').value.trim();
@@ -347,12 +444,12 @@
         sync();
     }
 
+    // ── ACTIONS ──
     async function changePri(id, newPri) {
         await sb.from('tickets').update({ priority: newPri }).eq('id', id);
         sync();
     }
 
-    // FIXED: fetches current comments fresh from DB before appending
     async function addComment(table, id) {
         const msg = prompt('Add a comment:');
         if (!msg || !msg.trim()) return;
@@ -375,10 +472,12 @@
         sync();
     }
 
+    // ── HELPERS ──
     function formatAge(ts) { const ms = Date.now() - new Date(ts).getTime(); const d = Math.floor(ms/86400000); const h = Math.floor((ms%86400000)/3600000); return `${d}d ${h}h ago`; }
     function formatCountdown(date, time) { if (!date) return ''; const ms = new Date(`${date}T${time||'00:00'}`).getTime() - Date.now(); const d = Math.floor(Math.abs(ms)/86400000); const h = Math.floor((Math.abs(ms)%86400000)/3600000); return ms > 0 ? `In ${d}d ${h}h` : 'Past'; }
     function prettyDate(d) { if (!d) return ''; const p = d.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d; }
 
+    // ── RENDER ──
     function renderItem(i, table) {
         const isRequest = table === 'requests';
         const timer = isRequest ? formatCountdown(i.event_date, i.event_time) : formatAge(i.created_at);
@@ -406,16 +505,19 @@
         if (!isAdmin) return;
         document.getElementById('list_t').innerHTML = tickets.map(i => renderItem(i, 'tickets')).join('') || '<p style="color:var(--text2);font-size:13px;padding:8px 0;">No open tickets.</p>';
         document.getElementById('list_ct').innerHTML = comp_t.map(i => renderItem(i, 'tickets')).join('');
+
         const todayStr = new Date().toISOString().split('T')[0];
         const sortByDateTime = (a, b) => new Date(`${a.event_date}T${a.event_time||'00:00'}`) - new Date(`${b.event_date}T${b.event_time||'00:00'}`);
         const todayReqs = requests.filter(r => r.event_date === todayStr).sort(sortByDateTime);
         const upcoming  = requests.filter(r => r.event_date && r.event_date > todayStr).sort(sortByDateTime);
         const noDate    = requests.filter(r => !r.event_date);
         const past      = requests.filter(r => r.event_date && r.event_date < todayStr).sort(sortByDateTime);
+
         document.getElementById('list_r').innerHTML =
             `<div class="group-header">Today</div>` + (todayReqs.map(i => renderItem(i, 'requests')).join('') || '<p style="color:var(--text2);font-size:13px;padding:4px 0;">Nothing today.</p>') +
             `<div class="group-header">Upcoming</div>` + ([...upcoming, ...noDate].map(i => renderItem(i, 'requests')).join('') || '<p style="color:var(--text2);font-size:13px;padding:4px 0;">No upcoming events.</p>') +
             (past.length ? `<div class="group-header">Past (not completed)</div>` + past.map(i => renderItem(i, 'requests')).join('') : '');
+
         document.getElementById('list_cr').innerHTML = comp_r.map(i => renderItem(i, 'requests')).join('');
     }
 
