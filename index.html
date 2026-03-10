@@ -324,7 +324,7 @@
             const title = document.getElementById('ut').value.trim();
             if (!name || !title) return alert('Please fill in your name and title.');
             table = window.curU;
-            item = { user_name: name, location: document.getElementById('ul').value, title, description: document.getElementById('ud').value, priority: 'Medium', comments: [], completed: false };
+            item = { user_name: name, location: document.getElementById('ul').value, title, description: document.getElementById('ud').value, comments: [], completed: false }; if (table === 'tickets') { item.priority = 'Medium'; }
             if (table === 'requests') { item.event_date = document.getElementById('udate').value || null; item.event_time = document.getElementById('utime').value || null; }
         } else if (mode === 'admin_t') {
             const name = document.getElementById('an').value.trim();
@@ -337,7 +337,7 @@
             const title = document.getElementById('rt').value.trim();
             if (!name || !title) return alert('Please fill in name and title.');
             table = 'requests';
-            item = { user_name: name, location: document.getElementById('rl').value, title, description: document.getElementById('rd').value, priority: 'Low', event_date: document.getElementById('rdt').value || null, event_time: document.getElementById('rtm').value || null, comments: [], completed: false };
+            item = { user_name: name, location: document.getElementById('rl').value, title, description: document.getElementById('rd').value, event_date: document.getElementById('rdt').value || null, event_time: document.getElementById('rtm').value || null, comments: [], completed: false };
         }
         const { error } = await sb.from(table).insert(item);
         if (error) return alert('Error saving: ' + error.message);
@@ -407,13 +407,15 @@
         document.getElementById('list_t').innerHTML = tickets.map(i => renderItem(i, 'tickets')).join('') || '<p style="color:var(--text2);font-size:13px;padding:8px 0;">No open tickets.</p>';
         document.getElementById('list_ct').innerHTML = comp_t.map(i => renderItem(i, 'tickets')).join('');
         const todayStr = new Date().toISOString().split('T')[0];
-        const todayReqs = requests.filter(r => r.event_date === todayStr);
-        const upcoming  = requests.filter(r => !r.event_date || r.event_date > todayStr);
-        const past      = requests.filter(r => r.event_date && r.event_date < todayStr);
+        const sortByDateTime = (a, b) => new Date(`${a.event_date}T${a.event_time||'00:00'}`) - new Date(`${b.event_date}T${b.event_time||'00:00'}`);
+        const todayReqs = requests.filter(r => r.event_date === todayStr).sort(sortByDateTime);
+        const upcoming  = requests.filter(r => r.event_date && r.event_date > todayStr).sort(sortByDateTime);
+        const noDate    = requests.filter(r => !r.event_date);
+        const past      = requests.filter(r => r.event_date && r.event_date < todayStr).sort(sortByDateTime);
         document.getElementById('list_r').innerHTML =
             `<div class="group-header">Today</div>` + (todayReqs.map(i => renderItem(i, 'requests')).join('') || '<p style="color:var(--text2);font-size:13px;padding:4px 0;">Nothing today.</p>') +
-            `<div class="group-header">Upcoming</div>` + (upcoming.map(i => renderItem(i, 'requests')).join('') || '<p style="color:var(--text2);font-size:13px;padding:4px 0;">No upcoming events.</p>') +
-            (past.length ? `<div class="group-header">Past</div>` + past.map(i => renderItem(i, 'requests')).join('') : '');
+            `<div class="group-header">Upcoming</div>` + ([...upcoming, ...noDate].map(i => renderItem(i, 'requests')).join('') || '<p style="color:var(--text2);font-size:13px;padding:4px 0;">No upcoming events.</p>') +
+            (past.length ? `<div class="group-header">Past (not completed)</div>` + past.map(i => renderItem(i, 'requests')).join('') : '');
         document.getElementById('list_cr').innerHTML = comp_r.map(i => renderItem(i, 'requests')).join('');
     }
 
