@@ -366,7 +366,9 @@
     const SUPABASE_KEY = 'sb_publishable_bBvUJz-BLVAVsPIK18Ch3g_O7_yln4d';
     const ADMIN_EMAIL  = 'admin@erc.local';
     const { createClient } = supabase;
-    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: { persistSession: false }
+    });
     let isAdmin = false, currentUser = null;
 
     // ── THEME ──
