@@ -243,8 +243,14 @@
         <textarea id="ud" placeholder="Details..." rows="4" style="margin-top:10px;"></textarea>
         <!-- Labeled date/time fields so mobile users know what they are -->
         <div id="uTimeRow" style="display:none; gap:10px; margin-top:10px;">
-            <input type="date" id="udate" placeholder="📅 Date">
-            <input type="time" id="utime" placeholder="🕐 Time">
+            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                <span style="font-size:11px; font-weight:600; color:var(--text2);">📅 Event Date</span>
+                <input type="date" id="udate">
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:4px;">
+                <span style="font-size:11px; font-weight:600; color:var(--text2);">🕐 Event Time</span>
+                <input type="time" id="utime">
+            </div>
         </div>
         <button class="btn-primary" onclick="submitEntry('user')">Submit</button>
     </div>
@@ -290,8 +296,8 @@
                 <textarea id="rd" placeholder="Details..." rows="2" style="margin-top:10px;"></textarea>
                 <!-- Labeled date/time for admin too -->
                 <div style="display:flex; gap:10px; margin-top:10px;">
-                    <input type="date" id="rdt" placeholder="📅 Date">
-                    <input type="time" id="rtm" placeholder="🕐 Time">
+                    <input type="date" id="rdt">
+                    <input type="time" id="rtm">
                 </div>
                 <button class="btn-primary" onclick="submitEntry('admin_r')">Save Event</button>
             </div>
