@@ -81,8 +81,10 @@
         .search-clear:hover { opacity: 1; background: none; }
 
         /* ── THEME TOGGLE ── */
-        .theme-toggle { background: var(--surface2); border: 1px solid var(--border2); border-radius: 20px; padding: 5px 10px; font-size: 16px; cursor: pointer; line-height: 1; transition: 0.2s; }
-        .theme-toggle:hover { border-color: var(--accent); }
+        .theme-toggle { position: relative; width: 56px; height: 28px; border-radius: 28px; border: none; cursor: pointer; padding: 0; background: #334155; transition: background 0.25s; flex-shrink: 0; }
+        [data-theme="light"] .theme-toggle { background: #cbd5e1; }
+        .theme-toggle-knob { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: white; transition: transform 0.25s; display: flex; align-items: center; justify-content: center; font-size: 13px; line-height: 1; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        [data-theme="light"] .theme-toggle .theme-toggle-knob { transform: translateX(28px); }
 
         /* ── LOADING ── */
         .loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 5000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
@@ -213,7 +215,7 @@
 
 <!-- Login -->
 <div id="loginOverlay" style="display:none;">
-    <button class="theme-toggle login-theme" onclick="toggleTheme()" id="loginThemeBtn" title="Toggle theme">🌙</button>
+    <button class="theme-toggle login-theme" onclick="toggleTheme()" title="Toggle theme"><span class="theme-toggle-knob" id="loginThemeKnob">☀️</span></button>
     <div class="login-wrap">
         <div class="login-header">
             <div class="login-logo">ERC <span>Ticketing</span></div>
@@ -249,7 +251,7 @@
             <span class="sync-ind uSyncStat" style="color:var(--med)">● Connecting...</span>
         </div>
         <div class="page-header-right">
-            <button class="theme-toggle" onclick="toggleTheme()" id="userThemeBtn" title="Toggle theme">🌙</button>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"><span class="theme-toggle-knob">☀️</span></button>
             <button class="btn-logoff" onclick="handleLogout()">Log Off</button>
         </div>
     </div>
@@ -298,7 +300,7 @@
             <span class="sync-ind aSyncStat" style="color:var(--med)">● Connecting...</span>
         </div>
         <div class="top-nav-actions">
-            <button class="theme-toggle" onclick="toggleTheme()" id="adminThemeBtn" title="Toggle theme">🌙</button>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme"><span class="theme-toggle-knob">☀️</span></button>
             <button class="btn-icon" onclick="sync()">🔄 Refresh</button>
             <button class="btn-logoff" onclick="handleLogout()">Log Off</button>
         </div>
@@ -374,17 +376,20 @@
         const newTheme = isDark ? 'light' : 'dark';
         html.setAttribute('data-theme', newTheme);
         localStorage.setItem('erc-theme', newTheme);
-        const icon = isDark ? '🌙' : '☀️';
-        document.querySelectorAll('.theme-toggle').forEach(b => b.textContent = icon);
+        // Update knob icons: dark mode = show sun (to switch to light), light mode = show moon (to switch to dark)
+        updateThemeKnobs(newTheme);
+    }
+
+    function updateThemeKnobs(theme) {
+        const icon = theme === 'dark' ? '☀️' : '🌙';
+        document.querySelectorAll('.theme-toggle-knob').forEach(k => k.textContent = icon);
     }
 
     // Load saved theme on startup
     (function() {
         const saved = localStorage.getItem('erc-theme') || 'dark';
         document.documentElement.setAttribute('data-theme', saved);
-        const icon = saved === 'dark' ? '🌙' : '☀️';
-        // will be set after DOM ready, handled below
-        window._savedThemeIcon = icon;
+        window._savedTheme = saved;
     })();
 
     // ── AUTH ──
@@ -419,13 +424,14 @@
         }
         sync();
         loadAnnouncement();
+        startInactivityWatcher();
     }
 
     async function init() {
         const { data: { session } } = await sb.auth.getSession();
         document.getElementById('loadingOverlay').style.display = 'none';
         // Apply saved theme icon to all toggle buttons
-        document.querySelectorAll('.theme-toggle').forEach(b => b.textContent = window._savedThemeIcon || '🌙');
+        updateThemeKnobs(window._savedTheme || 'dark');
         if (session) {
             currentUser = session.user;
             isAdmin = currentUser.email === ADMIN_EMAIL;
@@ -546,7 +552,7 @@
         }
         const { error } = await sb.from(table).insert(item);
         if (error) return alert('Error saving: ' + error.message);
-        if (mode === 'user') { alert('Submitted successfully!'); location.reload(); return; }
+        if (mode === 'user') { alert('✅ Submitted successfully! You will now be logged out.'); await sb.auth.signOut(); location.reload(); return; }
         if (mode === 'admin_t') { ['at','ad'].forEach(id => document.getElementById(id).value = ''); }
         else { ['rt','rd','rdt','rtm'].forEach(id => document.getElementById(id).value = ''); }
         sync();
@@ -677,6 +683,27 @@
         document.querySelector('.col-requests').style.display = tab === 'requests' ? 'block' : 'none';
         document.getElementById('btnTickets').classList.toggle('active', tab === 'tickets');
         document.getElementById('btnSchedule').classList.toggle('active', tab === 'requests');
+    }
+
+
+    // ── INACTIVITY LOGOUT (5 minutes) ──
+    const INACTIVE_MS = 5 * 60 * 1000;
+    let inactivityTimer = null;
+
+    function resetInactivityTimer() {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(async () => {
+            await sb.auth.signOut();
+            alert('You have been logged out due to inactivity.');
+            location.reload();
+        }, INACTIVE_MS);
+    }
+
+    function startInactivityWatcher() {
+        ['mousemove','keydown','mousedown','touchstart','scroll','click'].forEach(evt =>
+            document.addEventListener(evt, resetInactivityTimer, { passive: true })
+        );
+        resetInactivityTimer();
     }
 
     setInterval(sync, 60000);
